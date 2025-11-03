@@ -7,41 +7,57 @@ import {
   HttpStatus,
   Param,
   ParseIntPipe,
-  Post,
   Put,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { User } from './entities/user.entity';
-import { CreateUserDTO } from './dto/create-user.dto';
 import { UpdateUserDTO } from './dto/update-user.dto';
+import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
+import { RoleGuard } from 'src/common/guards/role.guard';
+import { Roles } from 'src/common/enums/Roles.enum';
+import { customRoleDecorator } from 'src/common/decorators/Roles.decorator';
 
 @Controller('users')
+@UseGuards(JwtAuthGuard, RoleGuard)
 export class UsersController {
   constructor(private readonly userService: UsersService) {}
 
   @Get()
   @HttpCode(HttpStatus.OK)
+  @customRoleDecorator(Roles.Admin, Roles.Hr)
   async getAllUsers(): Promise<User[]> {
     return await this.userService.findAll();
   }
 
+  @Get('current')
+  @HttpCode(HttpStatus.OK)
+  async currentUser(@Req() req): Promise<User> {
+    const { userId } = req.user;
+    return await this.userService.currentUser(userId);
+  }
+
   @Get(':id')
   @HttpCode(HttpStatus.OK)
+  @customRoleDecorator(Roles.Admin, Roles.Hr)
   async findById(@Param('id', ParseIntPipe) id: number): Promise<User> {
     return await this.userService.findById(id);
   }
 
   @Put(':id')
   @HttpCode(HttpStatus.OK)
+  @customRoleDecorator(Roles.Admin)
   async updateUser(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateUserDTO: UpdateUserDTO,
-  ):Promise<User> {
+  ): Promise<User> {
     return await this.userService.updateUser(id, updateUserDTO);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @customRoleDecorator(Roles.Admin)
   async deleteUser(@Param('id', ParseIntPipe) id: number): Promise<void> {
     return await this.userService.delete(id);
   }
