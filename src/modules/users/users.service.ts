@@ -9,7 +9,7 @@ import { Repository } from 'typeorm';
 import { CreateUserDTO } from './dto/create-user.dto';
 import { UpdateUserDTO } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
-import { Roles } from 'src/common/Roles.enum';
+import { Roles } from 'src/common/enums/Roles.enum';
 
 @Injectable()
 export class UsersService {
@@ -92,5 +92,13 @@ export class UsersService {
 
     Object.assign(user, updateUser);
     return await this.userRepo.save(user);
+  }
+
+  async currentUser(id: number): Promise<User> {
+    const user = await this.userRepo.findOne({
+      where: { id },
+    });
+    if (!user) throw new NotFoundException('User not exist');
+    return user;
   }
 }
