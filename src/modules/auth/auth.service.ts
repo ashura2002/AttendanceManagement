@@ -34,5 +34,3 @@ export class AuthService {
   }
 }
 
-// to do -> add guard for protecting route
-

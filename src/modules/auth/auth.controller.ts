@@ -1,8 +1,17 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { CreateUserDTO } from '../users/dto/create-user.dto';
 import { UsersService } from '../users/users.service';
 import { AuthService } from './auth.service';
 import { LoginDTO } from './dto/login.dto';
+import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
+import { Throttle } from '@nestjs/throttler';
 
 @Controller('auth')
 export class AuthController {
@@ -17,6 +26,7 @@ export class AuthController {
     return await this.authService.login(loginDTO);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
   async register(@Body() createUserDTO: CreateUserDTO) {
