@@ -8,6 +8,8 @@ import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { CreateUserDTO } from './dto/create-user.dto';
 import { UpdateUserDTO } from './dto/update-user.dto';
+import * as bcrypt from 'bcrypt';
+import { Roles } from 'src/common/Roles.enum';
 
 @Injectable()
 export class UsersService {
@@ -40,6 +42,15 @@ export class UsersService {
     return user;
   }
 
+  async findByUserName(userName: string): Promise<User> {
+    const user = await this.userRepo.findOne({
+      where: { userName },
+    });
+
+    if (!user) throw new NotFoundException('User not found with this username');
+    return user;
+  }
+
   async registerUser(createUserDTO: CreateUserDTO): Promise<User> {
     const { email, userName } = createUserDTO;
     const existEmail = await this.userRepo.findOne({
@@ -52,6 +63,12 @@ export class UsersService {
     if (existEmail || existUsername)
       throw new BadRequestException('Bad request Credentials already exist');
 
+    const validRoles = Object.values(Roles);
+    if (!validRoles.includes(createUserDTO.role)) {
+      throw new BadRequestException(
+        `${createUserDTO.role} is an invalid role.`,
+      );
+    }
     const user = this.userRepo.create(createUserDTO);
     return await this.userRepo.save(user);
   }
@@ -62,11 +79,16 @@ export class UsersService {
     await this.userRepo.remove(user);
   }
 
-  async updateUser(id: number, updateUser: UpdateUserDTO) {
+  async updateUser(id: number, updateUser: UpdateUserDTO): Promise<User> {
     const user = await this.userRepo.findOne({
       where: { id },
     });
     if (!user) throw new NotFoundException('User not found!');
+
+    if (updateUser.password) {
+      const hashPassword = await bcrypt.hash(updateUser.password, 10);
+      updateUser.password = hashPassword;
+    }
 
     Object.assign(user, updateUser);
     return await this.userRepo.save(user);
