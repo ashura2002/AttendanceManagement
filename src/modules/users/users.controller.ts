@@ -25,12 +25,6 @@ export class UsersController {
     return await this.userService.findAll();
   }
 
-  @Post('register')
-  @HttpCode(HttpStatus.CREATED)
-  async register(@Body() createUserDTO: CreateUserDTO) {
-    return await this.userService.registerUser(createUserDTO);
-  }
-
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   async findById(@Param('id', ParseIntPipe) id: number): Promise<User> {
@@ -39,10 +33,12 @@ export class UsersController {
 
   @Put(':id')
   @HttpCode(HttpStatus.OK)
-  async updateUser(@Param('id', ParseIntPipe) id: number, @Body()updateUserDTO:UpdateUserDTO){
-    return await this.userService.updateUser(id, updateUserDTO)
+  async updateUser(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateUserDTO: UpdateUserDTO,
+  ):Promise<User> {
+    return await this.userService.updateUser(id, updateUserDTO);
   }
-
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
