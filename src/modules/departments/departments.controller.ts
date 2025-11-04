@@ -19,7 +19,10 @@ import { CreateDepartmentDTO } from './dto/create-department.dto';
 import { customRoleDecorator } from 'src/common/decorators/Roles.decorator';
 import { Roles } from 'src/common/enums/Roles.enum';
 import { UpdateDepartmentDTO } from './dto/update-department.dto';
+import { DepartmentWithEmployees } from './types/DepartmentWithEmployees.types';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
+@ApiBearerAuth('access-token')
 @Controller('departments')
 @UseGuards(JwtAuthGuard, RoleGuard)
 export class DepartmentsController {
@@ -63,5 +66,12 @@ export class DepartmentsController {
     @Body() updateDeptDTO: UpdateDepartmentDTO,
   ): Promise<Department> {
     return this.departmentService.updateDepartmentDetails(id, updateDeptDTO);
+  }
+
+  @Get(':id/employees')
+  @HttpCode(HttpStatus.OK)
+  @customRoleDecorator(Roles.Admin, Roles.Hr)
+  async getAllUserOnDepartment(@Param('id',ParseIntPipe) id: number): Promise<DepartmentWithEmployees> {
+    return await this.departmentService.getAllUserOnDepartment(id);
   }
 }

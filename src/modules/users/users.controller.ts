@@ -19,7 +19,10 @@ import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { RoleGuard } from 'src/common/guards/role.guard';
 import { Roles } from 'src/common/enums/Roles.enum';
 import { customRoleDecorator } from 'src/common/decorators/Roles.decorator';
+import { ApiBearerAuth } from '@nestjs/swagger';
+import { AssignDeptDTO } from './dto/assignDep.dto';
 
+@ApiBearerAuth('access-token')
 @Controller('users')
 @UseGuards(JwtAuthGuard, RoleGuard)
 export class UsersController {
@@ -66,8 +69,8 @@ export class UsersController {
   @Patch(':id/departments')
   async assignTo(
     @Param('id', ParseIntPipe) id: number,
-    @Body() updateUserDTO: UpdateUserDTO,
-  ): Promise<any> {
+    @Body() updateUserDTO: AssignDeptDTO,
+  ): Promise<User> {
     return this.userService.assignUserToDepartment(id, updateUserDTO);
   }
 }
