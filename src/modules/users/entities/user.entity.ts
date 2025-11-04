@@ -1,9 +1,11 @@
 import {
   BeforeInsert,
   Column,
+  CreateDateColumn,
   Entity,
   ManyToOne,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { Exclude } from 'class-transformer';
 import * as bcrypt from 'bcrypt';
@@ -35,6 +37,12 @@ export class User {
   })
   role: Roles;
 
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
+
   @ManyToOne(() => Department, (department) => department.employees, {
     nullable: true,
   })
@@ -45,6 +53,3 @@ export class User {
     this.password = await bcrypt.hash(this.password, 10);
   }
 }
-
-// todo -> finish the department modules
-//         add swagger UI

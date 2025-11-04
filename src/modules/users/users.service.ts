@@ -97,6 +97,7 @@ export class UsersService {
   async currentUser(id: number): Promise<User> {
     const user = await this.userRepo.findOne({
       where: { id },
+      relations:['department']
     });
     if (!user) throw new NotFoundException('User not exist');
     return user;
