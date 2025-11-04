@@ -86,7 +86,3 @@ export class DepartmentsService {
     };
   }
 }
-
-// to do ->
-// Fetch all employee on particular department -> done
-// add swagger UI -> done

@@ -4,6 +4,7 @@ import {
   CreateDateColumn,
   Entity,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -11,6 +12,7 @@ import { Exclude } from 'class-transformer';
 import * as bcrypt from 'bcrypt';
 import { Roles } from 'src/common/enums/Roles.enum';
 import { Department } from 'src/modules/departments/entities/department.entity';
+import { Notification } from 'src/modules/notification/entities/notification.entity';
 
 @Entity()
 export class User {
@@ -47,6 +49,9 @@ export class User {
     nullable: true,
   })
   department?: Department;
+
+  @OneToMany(() => Notification, (notif) => notif.user, { nullable: true })
+  notifications: Notification[];
 
   @BeforeInsert()
   async hashPassword() {
