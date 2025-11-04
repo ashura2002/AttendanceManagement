@@ -1,16 +1,18 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { CreateDepartmentDTO } from './create-department.dto';
-import { IsOptional, IsString } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
-export class UpdateDepartmentDTO extends PartialType(CreateDepartmentDTO) {
+export class UpdateDepartmentDTO {
   @ApiProperty()
   @IsOptional()
   @IsString()
-  departmentName?: string | undefined;
+  @IsNotEmpty()
+  departmentName: string;
 
   @ApiProperty()
   @IsOptional()
   @IsString()
-  description?: string | undefined;
+  @IsNotEmpty()
+  description: string;
 }

@@ -12,6 +12,7 @@ import * as bcrypt from 'bcrypt';
 import { Roles } from 'src/common/enums/Roles.enum';
 import { DepartmentsService } from '../departments/departments.service';
 import { AssignDeptDTO } from './dto/assignDep.dto';
+import { NotificationService } from '../notification/notification.service';
 
 @Injectable()
 export class UsersService {
@@ -19,6 +20,7 @@ export class UsersService {
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
     private readonly departmentService: DepartmentsService,
+    private readonly notifService: NotificationService,
   ) {}
 
   async findAll(): Promise<User[]> {
@@ -39,6 +41,13 @@ export class UsersService {
   async findById(id: number): Promise<User> {
     const user = await this.userRepo.findOne({
       where: { id },
+      relations: ['department'],
+      select: {
+        department: {
+          departmentName: true,
+          description: true,
+        },
+      },
     });
 
     if (!user) throw new NotFoundException('User not found');
@@ -119,7 +128,12 @@ export class UsersService {
     if (department) {
       const dept = await this.departmentService.getById(department);
       user.department = dept;
+      await this.notifService.createNotification({
+        message: `You are now part of ${dept.departmentName} department.`,
+        user: user.id,
+      });
     }
+
     return this.userRepo.save(user);
   }
 }

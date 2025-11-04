@@ -71,7 +71,9 @@ export class DepartmentsController {
   @Get(':id/employees')
   @HttpCode(HttpStatus.OK)
   @customRoleDecorator(Roles.Admin, Roles.Hr)
-  async getAllUserOnDepartment(@Param('id',ParseIntPipe) id: number): Promise<DepartmentWithEmployees> {
+  async getAllUserOnDepartment(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<DepartmentWithEmployees> {
     return await this.departmentService.getAllUserOnDepartment(id);
   }
 }
