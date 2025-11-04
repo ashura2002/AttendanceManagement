@@ -65,5 +65,6 @@ export class DepartmentsService {
   }
 }
 
-// to do -> add a controller for assign employee for this department
+// to do -> add a controller for assign employee for this department DONE
+// Fetch all employee on particular department
 // add swagger UI
