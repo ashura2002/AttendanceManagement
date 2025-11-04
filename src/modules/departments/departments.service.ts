@@ -8,6 +8,7 @@ import { Department } from './entities/department.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateDepartmentDTO } from './dto/create-department.dto';
 import { UpdateDepartmentDTO } from './dto/update-department.dto';
+import { DepartmentWithEmployees } from './types/DepartmentWithEmployees.types';
 
 @Injectable()
 export class DepartmentsService {
@@ -63,8 +64,29 @@ export class DepartmentsService {
     Object.assign(departmentExist, updateDeptDTO);
     return await this.departmentRepo.save(departmentExist);
   }
+
+  async getAllUserOnDepartment(
+    departmentID: number,
+  ): Promise<DepartmentWithEmployees> {
+    const department = await this.departmentRepo.findOne({
+      where: { id: departmentID },
+      relations: ['employees'],
+    });
+    if (!department) throw new NotFoundException('Department not exist');
+    // added custom shape
+    return {
+      id: department.id,
+      departmentName: department.departmentName,
+      description: department.description,
+      totalEmployees: department.employees.length,
+      employees: department.employees.map((emp) => ({
+        displayName: emp.displayName,
+        email: emp.email,
+      })),
+    };
+  }
 }
 
-// to do -> add a controller for assign employee for this department DONE
-// Fetch all employee on particular department
-// add swagger UI
+// to do ->
+// Fetch all employee on particular department -> done
+// add swagger UI -> done

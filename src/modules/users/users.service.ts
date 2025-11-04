@@ -11,6 +11,7 @@ import { UpdateUserDTO } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
 import { Roles } from 'src/common/enums/Roles.enum';
 import { DepartmentsService } from '../departments/departments.service';
+import { AssignDeptDTO } from './dto/assignDep.dto';
 
 @Injectable()
 export class UsersService {
@@ -107,8 +108,8 @@ export class UsersService {
 
   async assignUserToDepartment(
     userId: number,
-    updateUserDTO: UpdateUserDTO,
-  ): Promise<any> {
+    updateUserDTO: AssignDeptDTO,
+  ): Promise<User> {
     const { department } = updateUserDTO;
     const user = await this.userRepo.findOne({
       where: { id: userId },
