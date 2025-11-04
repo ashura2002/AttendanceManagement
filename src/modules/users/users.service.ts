@@ -10,12 +10,14 @@ import { CreateUserDTO } from './dto/create-user.dto';
 import { UpdateUserDTO } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
 import { Roles } from 'src/common/enums/Roles.enum';
+import { DepartmentsService } from '../departments/departments.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
+    private readonly departmentService: DepartmentsService,
   ) {}
 
   async findAll(): Promise<User[]> {
@@ -97,9 +99,26 @@ export class UsersService {
   async currentUser(id: number): Promise<User> {
     const user = await this.userRepo.findOne({
       where: { id },
-      relations:['department']
+      relations: ['department'],
     });
     if (!user) throw new NotFoundException('User not exist');
     return user;
+  }
+
+  async assignUserToDepartment(
+    userId: number,
+    updateUserDTO: UpdateUserDTO,
+  ): Promise<any> {
+    const { department } = updateUserDTO;
+    const user = await this.userRepo.findOne({
+      where: { id: userId },
+      relations: ['department'],
+    });
+    if (!user) throw new NotFoundException('User not found');
+    if (department) {
+      const dept = await this.departmentService.getById(department);
+      user.department = dept;
+    }
+    return this.userRepo.save(user);
   }
 }

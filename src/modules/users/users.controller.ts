@@ -7,6 +7,7 @@ import {
   HttpStatus,
   Param,
   ParseIntPipe,
+  Patch,
   Put,
   Req,
   UseGuards,
@@ -60,5 +61,13 @@ export class UsersController {
   @customRoleDecorator(Roles.Admin)
   async deleteUser(@Param('id', ParseIntPipe) id: number): Promise<void> {
     return await this.userService.delete(id);
+  }
+
+  @Patch(':id/departments')
+  async assignTo(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateUserDTO: UpdateUserDTO,
+  ): Promise<any> {
+    return this.userService.assignUserToDepartment(id, updateUserDTO);
   }
 }
