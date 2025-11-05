@@ -14,7 +14,6 @@ import { CreateNotificationDTO } from './dto/create-notification.dto';
 import { Notification } from './entities/notification.entity';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { ApiBearerAuth } from '@nestjs/swagger';
-import { MarkAsReadDTO } from './dto/mark-as-read.dto';
 
 @ApiBearerAuth('access-token')
 @Controller('notification')
@@ -38,9 +37,8 @@ export class NotificationController {
   @Patch(':id')
   async markAsRead(
     @Param('id', ParseIntPipe) id: number,
-    @Body() markAsReadDTO: MarkAsReadDTO,
   ): Promise<Notification> {
-    return this.notifService.markAsRead(id, markAsReadDTO);
+    return this.notifService.markAsRead(id);
   }
 }
 // to do -> add a delete notifications
