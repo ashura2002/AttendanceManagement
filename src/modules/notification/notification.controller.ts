@@ -1,7 +1,10 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   ParseIntPipe,
   Patch,
@@ -22,6 +25,7 @@ export class NotificationController {
   constructor(private readonly notifService: NotificationService) {}
 
   @Post()
+  @HttpCode(HttpStatus.CREATED)
   async createNotif(
     @Body() createNotifDTO: CreateNotificationDTO,
   ): Promise<Notification> {
@@ -29,16 +33,29 @@ export class NotificationController {
   }
 
   @Get('me')
+  @HttpCode(HttpStatus.OK)
   async getOwnNotification(@Req() req): Promise<Notification[]> {
     const { userId } = req.user;
     return this.notifService.getOwnNotification(userId);
   }
 
   @Patch(':id')
+  @HttpCode(HttpStatus.OK)
   async markAsRead(
     @Param('id', ParseIntPipe) id: number,
+    @Req() req,
   ): Promise<Notification> {
-    return this.notifService.markAsRead(id);
+    const { userId } = req.user;
+    return this.notifService.markAsRead(id, userId);
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async removeNotification(
+    @Req() req,
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<void> {
+    const { userId } = req.user;
+    await this.notifService.deleteNotification(id, userId);
   }
 }
-// to do -> add a delete notifications
