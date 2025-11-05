@@ -119,6 +119,7 @@ export class UsersService {
   async assignUserToDepartment(
     userId: number,
     updateUserDTO: AssignDeptDTO,
+    assignerID: number,
   ): Promise<User> {
     const { department } = updateUserDTO;
     const user = await this.userRepo.findOne({
@@ -129,9 +130,16 @@ export class UsersService {
     if (department) {
       const dept = await this.departmentService.getById(department);
       user.department = dept;
+      // for employee
       await this.notifService.createNotification({
         message: `You are now part of ${dept.departmentName} department.`,
         user: user.id,
+      });
+
+      // for user that who assign
+      await this.notifService.createNotification({
+        message: `You successfully assign ${user.displayName} to ${dept.departmentName} department.`,
+        user: assignerID,
       });
     }
 

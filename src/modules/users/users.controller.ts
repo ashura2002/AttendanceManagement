@@ -68,9 +68,11 @@ export class UsersController {
 
   @Patch(':id/departments')
   async assignTo(
+    @Req() req,
     @Param('id', ParseIntPipe) id: number,
     @Body() updateUserDTO: AssignDeptDTO,
   ): Promise<User> {
-    return this.userService.assignUserToDepartment(id, updateUserDTO);
+    const { userId } = req.user;
+    return this.userService.assignUserToDepartment(id, updateUserDTO, userId);
   }
 }

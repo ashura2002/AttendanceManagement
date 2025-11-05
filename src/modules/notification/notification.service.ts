@@ -1,9 +1,15 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import {
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { Notification } from './entities/notification.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateNotificationDTO } from './dto/create-notification.dto';
 import { UsersService } from '../users/users.service';
+import { MarkAsReadDTO } from './dto/mark-as-read.dto';
 
 @Injectable()
 export class NotificationService {
@@ -32,5 +38,13 @@ export class NotificationService {
     });
     return myNotification;
   }
+
+  async markAsRead(id: number, markAsRead: MarkAsReadDTO): Promise<Notification> {
+    const notification = await this.notificationRepo.findOne({
+      where: { id },
+    });
+    if (!notification) throw new NotFoundException('Notification not found');
+    Object.assign(notification, markAsRead);
+    return await this.notificationRepo.save(notification);
+  }
 }
-// todo -> add mark as read and delete own notification
