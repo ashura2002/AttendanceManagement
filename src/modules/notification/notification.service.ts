@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   forwardRef,
   Inject,
   Injectable,
@@ -38,12 +39,30 @@ export class NotificationService {
     return myNotification;
   }
 
-  async markAsRead(id: number): Promise<Notification> {
+  async markAsRead(id: number, userId: number): Promise<Notification> {
     const notification = await this.notificationRepo.findOne({
       where: { id },
+      relations: ['user'],
     });
     if (!notification) throw new NotFoundException('Notification not found');
+    if (notification.user.id !== userId)
+      throw new BadRequestException(
+        'You can only allow to modify your own notifications',
+      );
     notification.isRead = true;
     return this.notificationRepo.save(notification);
+  }
+
+  async deleteNotification(id: number, userId: number): Promise<void> {
+    const notification = await this.notificationRepo.findOne({
+      where: { id },
+      relations: ['user'],
+    });
+    if (!notification) throw new NotFoundException('Notification not found!');
+    if (notification.user.id !== userId)
+      throw new BadRequestException(
+        `You can only delete your own notifications`,
+      );
+    await this.notificationRepo.remove(notification);
   }
 }
