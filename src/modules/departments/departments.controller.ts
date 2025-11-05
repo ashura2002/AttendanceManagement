@@ -5,10 +5,12 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  NotFoundException,
   Param,
   ParseIntPipe,
   Post,
   Put,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { DepartmentsService } from './departments.service';
@@ -75,5 +77,16 @@ export class DepartmentsController {
     @Param('id', ParseIntPipe) id: number,
   ): Promise<DepartmentWithEmployees> {
     return await this.departmentService.getAllUserOnDepartment(id);
+  }
+
+  @Get('own')
+  @HttpCode(HttpStatus.OK)
+  async getOwnDepartment(@Req() req): Promise<Department> {
+    const { userId } = req.user;
+    const department = await this.departmentService.getOwnDepartments(userId);
+    if (!department) {
+      throw new NotFoundException("You don't have a department");
+    }
+    return department;
   }
 }

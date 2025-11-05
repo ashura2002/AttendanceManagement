@@ -44,6 +44,7 @@ export class UsersService {
       relations: ['department'],
       select: {
         department: {
+          id: true,
           departmentName: true,
           description: true,
         },
