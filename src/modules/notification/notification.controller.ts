@@ -1,9 +1,20 @@
-import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { NotificationService } from './notification.service';
 import { CreateNotificationDTO } from './dto/create-notification.dto';
 import { Notification } from './entities/notification.entity';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import { MarkAsReadDTO } from './dto/mark-as-read.dto';
 
 @ApiBearerAuth('access-token')
 @Controller('notification')
@@ -23,6 +34,13 @@ export class NotificationController {
     const { userId } = req.user;
     return this.notifService.getOwnNotification(userId);
   }
+
+  @Patch(':id')
+  async markAsRead(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() markAsReadDTO: MarkAsReadDTO,
+  ): Promise<Notification> {
+    return this.notifService.markAsRead(id, markAsReadDTO);
+  }
 }
-// to do -> complete notification endpoints
-// add mark as read and delete notification
+// to do -> add a delete notifications
