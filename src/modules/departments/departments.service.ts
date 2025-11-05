@@ -1,5 +1,7 @@
 import {
   BadRequestException,
+  forwardRef,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -9,12 +11,15 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { CreateDepartmentDTO } from './dto/create-department.dto';
 import { UpdateDepartmentDTO } from './dto/update-department.dto';
 import { DepartmentWithEmployees } from './types/DepartmentWithEmployees.types';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class DepartmentsService {
   constructor(
     @InjectRepository(Department)
     private readonly departmentRepo: Repository<Department>,
+    @Inject(forwardRef(() => UsersService))
+    private readonly userService: UsersService,
   ) {}
 
   async getAllDepartments(): Promise<Department[]> {
@@ -84,5 +89,16 @@ export class DepartmentsService {
         email: emp.email,
       })),
     };
+  }
+
+  async getOwnDepartments(userId: number): Promise<Department | null> {
+    const user = await this.userService.findById(userId);
+    if (!user.department?.id) {
+      return null;
+    }
+    const department = await this.departmentRepo.findOne({
+      where: { id: user.department.id },
+    });
+    return department;
   }
 }
