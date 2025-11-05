@@ -9,6 +9,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { DepartmentsModule } from './modules/departments/departments.module';
 import { NotificationModule } from './modules/notification/notification.module';
+import { LeaveRequestModule } from './modules/leave-request/leave-request.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { NotificationModule } from './modules/notification/notification.module';
     AuthModule,
     DepartmentsModule,
     NotificationModule,
+    LeaveRequestModule,
   ],
   controllers: [AppController],
   providers: [

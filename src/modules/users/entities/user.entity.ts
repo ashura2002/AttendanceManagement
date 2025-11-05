@@ -13,6 +13,7 @@ import * as bcrypt from 'bcrypt';
 import { Roles } from 'src/common/enums/Roles.enum';
 import { Department } from 'src/modules/departments/entities/department.entity';
 import { Notification } from 'src/modules/notification/entities/notification.entity';
+import { Request } from 'src/modules/leave-request/entities/request.entity';
 
 @Entity()
 export class User {
@@ -52,6 +53,9 @@ export class User {
 
   @OneToMany(() => Notification, (notif) => notif.user, { nullable: true })
   notifications: Notification[];
+
+  @OneToMany(() => Request, (request) => request.user)
+  requests: Request[]
 
   @BeforeInsert()
   async hashPassword() {
