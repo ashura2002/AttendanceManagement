@@ -33,3 +33,4 @@ export class NotificationService {
     return myNotification;
   }
 }
+// todo -> add mark as read and delete own notification
