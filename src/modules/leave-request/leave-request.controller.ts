@@ -6,6 +6,7 @@ import { RoleGuard } from 'src/common/guards/role.guard';
 import { customRoleDecorator } from 'src/common/decorators/Roles.decorator';
 import { Roles } from 'src/common/enums/Roles.enum';
 import { CreateLeaveRequestDTO } from './dto/create-request.dto';
+import { Request } from './entities/request.entity';
 
 @Controller('leave-request')
 @UseGuards(JwtAuthGuard, RoleGuard)
@@ -18,7 +19,8 @@ export class LeaveRequestController {
   async createLeaveRequest(
     @Req() req,
     @Body() dto: CreateLeaveRequestDTO,
-  ): Promise<any> {
-    return 'test';
+  ): Promise<Request> {
+    const { userId } = req.user;
+    return await this.leaveService.createLeaveForm(userId, dto);
   }
 }
