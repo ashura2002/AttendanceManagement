@@ -27,6 +27,9 @@ export class Request {
   @Column({ type: 'date' })
   endDate: Date;
 
+  @Column({ type: 'int', nullable: true })
+  totalLeaveDays: number;
+
   @ManyToOne(() => User, (user) => user.requests)
   user: User;
 }
