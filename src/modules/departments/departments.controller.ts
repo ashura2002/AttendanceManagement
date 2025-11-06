@@ -32,14 +32,14 @@ export class DepartmentsController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
-  @customRoleDecorator(Roles.Admin, Roles.Hr)
+  @customRoleDecorator(Roles.Admin, Roles.Hr, Roles.ProgramHead)
   async getAllDepartments(): Promise<Department[]> {
     return this.departmentService.getAllDepartments();
   }
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  @customRoleDecorator(Roles.Admin, Roles.Hr)
+  @customRoleDecorator(Roles.Admin, Roles.Hr, Roles.ProgramHead)
   async createDep(
     @Body() createDepartmentDTO: CreateDepartmentDTO,
   ): Promise<Department> {
@@ -48,21 +48,21 @@ export class DepartmentsController {
 
   @Get(':id/details')
   @HttpCode(HttpStatus.OK)
-  @customRoleDecorator(Roles.Admin, Roles.Hr)
+  @customRoleDecorator(Roles.Admin, Roles.Hr, Roles.ProgramHead)
   async getById(@Param('id', ParseIntPipe) id: number): Promise<Department> {
     return this.departmentService.getById(id);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @customRoleDecorator(Roles.Admin, Roles.Hr)
+  @customRoleDecorator(Roles.Admin, Roles.Hr, Roles.ProgramHead)
   async deleteDep(@Param('id', ParseIntPipe) id: number): Promise<void> {
     return this.departmentService.deleteDepartment(id);
   }
 
   @Put(':id')
   @HttpCode(HttpStatus.OK)
-  @customRoleDecorator(Roles.Admin, Roles.Hr)
+  @customRoleDecorator(Roles.Admin, Roles.Hr, Roles.ProgramHead)
   async updateDepartment(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateDeptDTO: UpdateDepartmentDTO,
@@ -72,7 +72,7 @@ export class DepartmentsController {
 
   @Get(':id/employees')
   @HttpCode(HttpStatus.OK)
-  @customRoleDecorator(Roles.Admin, Roles.Hr)
+  @customRoleDecorator(Roles.Admin, Roles.Hr, Roles.ProgramHead)
   async getAllUserOnDepartment(
     @Param('id', ParseIntPipe) id: number,
   ): Promise<DepartmentWithEmployees> {
