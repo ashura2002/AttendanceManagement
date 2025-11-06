@@ -38,4 +38,9 @@ export class CreateLeaveRequestDTO {
   @IsString()
   @IsOptional()
   status?: LeaveStatus;
+
+  @IsNotEmpty()
+  @IsInt()
+  @IsOptional()
+  totalLeaveDays?: number;
 }
