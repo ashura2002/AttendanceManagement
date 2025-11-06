@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { CreateLeaveRequestDTO } from './dto/create-request.dto';
 import { UsersService } from '../users/users.service';
 import { LeaveType } from 'src/common/enums/leaveType.enum';
+import { Roles } from 'src/common/enums/Roles.enum';
 import { LeaveStatus } from 'src/common/enums/leaveStatus.enum';
 
 @Injectable()
@@ -46,6 +47,25 @@ export class LeaveRequestService {
     return await this.leaveReqRepo.save(leaveRequest);
   }
 
+  async getAllRequest(role: Roles): Promise<Request[]> {
+    let whereCondition: any = {};
+    if (role === Roles.Hr) {
+      whereCondition = { views: LeaveStatus.Pending_HR };
+    }
+
+    if (role === Roles.ProgramHead) {
+      whereCondition = { views: LeaveStatus.Pending_ProgramHead };
+    }
+
+    if (role === Roles.Admin) {
+      whereCondition = { views: LeaveStatus.Pending_Admin };
+    }
+    const requestLeaveForm = await this.leaveReqRepo.find({
+      where: whereCondition,
+    });
+    return requestLeaveForm;
+  }
+
   async getOwnRequest(userId: number): Promise<Request[]> {
     const ownRequest = await this.leaveReqRepo.find({
       where: { user: { id: userId } },
@@ -53,20 +73,5 @@ export class LeaveRequestService {
     return ownRequest;
   }
 
-  async getAllRequestAdminAndHR(): Promise<Request[]> {
-    const requests = await this.leaveReqRepo.find({
-      relations: ['user'],
-      select: {
-        user: {
-          displayName: true,
-        },
-      },
-    });
-    return requests;
-  }
+  async decision(): Promise<any> {}
 }
-
-// to do -> Create Leave request module endpoints - DONE
-//       -> view own request -> employee -> view all - DONE
-//       -> add delete own request - employee only 
-//       -> approval flow from hr to admin

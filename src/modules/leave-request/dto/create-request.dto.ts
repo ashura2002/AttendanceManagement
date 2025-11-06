@@ -43,4 +43,5 @@ export class CreateLeaveRequestDTO {
   @IsInt()
   @IsOptional()
   totalLeaveDays?: number;
+
 }

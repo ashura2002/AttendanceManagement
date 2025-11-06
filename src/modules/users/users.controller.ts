@@ -30,7 +30,7 @@ export class UsersController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
-  @customRoleDecorator(Roles.Admin, Roles.Hr)
+  @customRoleDecorator(Roles.Admin, Roles.Hr, Roles.ProgramHead)
   async getAllUsers(): Promise<User[]> {
     return await this.userService.findAll();
   }
@@ -44,7 +44,7 @@ export class UsersController {
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
-  @customRoleDecorator(Roles.Admin, Roles.Hr)
+  @customRoleDecorator(Roles.Admin, Roles.Hr, Roles.ProgramHead)
   async findById(@Param('id', ParseIntPipe) id: number): Promise<User> {
     return await this.userService.findById(id);
   }
@@ -67,6 +67,8 @@ export class UsersController {
   }
 
   @Patch(':id/departments')
+  @HttpCode(HttpStatus.OK)
+  @customRoleDecorator(Roles.Admin)
   async assignTo(
     @Req() req,
     @Param('id', ParseIntPipe) id: number,

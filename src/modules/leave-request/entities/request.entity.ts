@@ -1,4 +1,4 @@
-import { LeaveStatus } from 'src/common/enums/leaveStatus.enum';
+import { LeaveStatus, ResultStatus } from 'src/common/enums/leaveStatus.enum';
 import { LeaveType } from 'src/common/enums/leaveType.enum';
 import { User } from 'src/modules/users/entities/user.entity';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
@@ -19,7 +19,7 @@ export class Request {
   reason: string;
 
   @Column({ type: 'enum', enum: LeaveStatus, default: LeaveStatus.Pending_HR })
-  status: LeaveStatus;
+  views: LeaveStatus;
 
   @Column({ type: 'date' })
   startDate: Date;
@@ -29,6 +29,9 @@ export class Request {
 
   @Column({ type: 'int', nullable: true })
   totalLeaveDays: number;
+
+  @Column({ type: 'enum', enum: ResultStatus, default: ResultStatus.Pending })
+  finalStatus: ResultStatus;
 
   @ManyToOne(() => User, (user) => user.requests)
   user: User;
