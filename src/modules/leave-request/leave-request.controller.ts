@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Patch,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { LeaveRequestService } from './leave-request.service';
@@ -24,6 +32,13 @@ export class LeaveRequestController {
     return await this.leaveService.createLeaveForm(userId, dto);
   }
 
+  @customRoleDecorator(Roles.Admin, Roles.Hr, Roles.ProgramHead)
+  @Get()
+  async getAllRequest(@Req() req): Promise<Request[]> {
+    const { role } = req.user;
+    return await this.leaveService.getAllRequest(role);
+  }
+
   @customRoleDecorator(Roles.Employee)
   @Get('own-request')
   async getOwnRequest(@Req() req): Promise<Request[]> {
@@ -31,9 +46,9 @@ export class LeaveRequestController {
     return await this.leaveService.getOwnRequest(userId);
   }
 
-  @customRoleDecorator(Roles.Admin, Roles.Hr)
-  @Get('')
-  async getAllRequestAdminAndHR(): Promise<Request[]> {
-    return await this.leaveService.getAllRequestAdminAndHR();
+  @customRoleDecorator(Roles.Admin, Roles.Hr, Roles.ProgramHead)
+  @Patch(':id')
+  async decision(): Promise<any> {
+  
   }
 }
