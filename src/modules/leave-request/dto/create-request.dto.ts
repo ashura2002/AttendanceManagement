@@ -1,5 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDateString, IsInt, IsNotEmpty, IsOptional } from 'class-validator';
+import {
+  IsDateString,
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+} from 'class-validator';
+import { LeaveStatus } from 'src/common/enums/leaveStatus.enum';
 import { LeaveType } from 'src/common/enums/leaveType.enum';
 
 export class CreateLeaveRequestDTO {
@@ -9,6 +16,7 @@ export class CreateLeaveRequestDTO {
 
   @ApiProperty()
   @IsNotEmpty()
+  @IsString()
   reason: string;
 
   @ApiProperty()
@@ -25,4 +33,9 @@ export class CreateLeaveRequestDTO {
   @IsInt()
   @IsOptional()
   user: number;
+
+  @IsNotEmpty()
+  @IsString()
+  @IsOptional()
+  status?: LeaveStatus;
 }
