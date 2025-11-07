@@ -92,6 +92,7 @@ export class LeaveRequestService {
     });
     return ownRequest;
   }
+
   async decision(
     requestID: number,
     userID: number,
@@ -230,7 +231,15 @@ export class LeaveRequestService {
 
     return await this.leaveReqRepo.save(request);
   }
+
+  async deleteOwnRequest(requestID: number): Promise<void> {
+    const request = await this.leaveReqRepo.findOne({
+      where: { id: requestID },
+    });
+    if (!request) throw new NotFoundException('Request not found');
+    await this.leaveReqRepo.remove(request);
+  }
 }
 
-// to do -> added delete request by employee only
+// to do -> added delete request by employee only - DONE
 //       -> get add archive rejected and approved request
