@@ -2,6 +2,8 @@ import {
   Body,
   Controller,
   Get,
+  Param,
+  ParseIntPipe,
   Patch,
   Post,
   Req,
@@ -15,6 +17,7 @@ import { customRoleDecorator } from 'src/common/decorators/Roles.decorator';
 import { Roles } from 'src/common/enums/Roles.enum';
 import { CreateLeaveRequestDTO } from './dto/create-request.dto';
 import { Request } from './entities/request.entity';
+import { DecisionDTO } from './dto/decision.dto';
 
 @Controller('leave-request')
 @UseGuards(JwtAuthGuard, RoleGuard)
@@ -48,7 +51,8 @@ export class LeaveRequestController {
 
   @customRoleDecorator(Roles.Admin, Roles.Hr, Roles.ProgramHead)
   @Patch(':id')
-  async decision(): Promise<any> {
-  
+  async decision(@Param('id', ParseIntPipe)id:number, @Req() req, @Body()dto:DecisionDTO): Promise<Request> {
+    const{userId} = req.user
+    return await this.leaveService.decision(id, userId, dto)
   }
 }
