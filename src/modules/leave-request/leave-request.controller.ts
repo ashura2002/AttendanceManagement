@@ -1,7 +1,10 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   ParseIntPipe,
   Patch,
@@ -26,6 +29,7 @@ export class LeaveRequestController {
   constructor(private readonly leaveService: LeaveRequestService) {}
 
   @customRoleDecorator(Roles.Employee)
+  @HttpCode(HttpStatus.CREATED)
   @Post()
   async createLeaveRequest(
     @Req() req,
@@ -36,6 +40,7 @@ export class LeaveRequestController {
   }
 
   @customRoleDecorator(Roles.Admin, Roles.Hr, Roles.ProgramHead)
+  @HttpCode(HttpStatus.OK)
   @Get()
   async getAllRequest(@Req() req): Promise<Request[]> {
     const { role } = req.user;
@@ -43,6 +48,7 @@ export class LeaveRequestController {
   }
 
   @customRoleDecorator(Roles.Employee)
+  @HttpCode(HttpStatus.OK)
   @Get('own-request')
   async getOwnRequest(@Req() req): Promise<Request[]> {
     const { userId } = req.user;
@@ -50,9 +56,21 @@ export class LeaveRequestController {
   }
 
   @customRoleDecorator(Roles.Admin, Roles.Hr, Roles.ProgramHead)
+  @HttpCode(HttpStatus.OK)
   @Patch(':id')
-  async decision(@Param('id', ParseIntPipe)id:number, @Req() req, @Body()dto:DecisionDTO): Promise<Request> {
-    const{userId} = req.user
-    return await this.leaveService.decision(id, userId, dto)
+  async decision(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req,
+    @Body() dto: DecisionDTO,
+  ): Promise<Request> {
+    const { userId } = req.user;
+    return await this.leaveService.decision(id, userId, dto);
+  }
+
+  @customRoleDecorator(Roles.Employee)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Delete(':id')
+  async deleteOwnRequest(@Param('id', ParseIntPipe) id: number): Promise<void> {
+    return await this.leaveService.deleteOwnRequest(id);
   }
 }
