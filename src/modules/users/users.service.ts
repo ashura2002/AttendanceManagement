@@ -145,4 +145,12 @@ export class UsersService {
 
     return this.userRepo.save(user);
   }
+
+  async findUserByRole(userRole: Roles): Promise<User> {
+    const user = await this.userRepo.findOne({
+      where: { role: userRole },
+    });
+    if (!user) throw new NotFoundException('User not found');
+    return user;
+  }
 }
