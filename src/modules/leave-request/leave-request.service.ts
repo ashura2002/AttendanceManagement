@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { Request } from './entities/request.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -6,7 +10,9 @@ import { CreateLeaveRequestDTO } from './dto/create-request.dto';
 import { UsersService } from '../users/users.service';
 import { LeaveType } from 'src/common/enums/leaveType.enum';
 import { Roles } from 'src/common/enums/Roles.enum';
-import { LeaveStatus } from 'src/common/enums/leaveStatus.enum';
+import { LeaveStatus, ResultStatus } from 'src/common/enums/leaveStatus.enum';
+import { DecisionDTO } from './dto/decision.dto';
+import { NotificationService } from '../notification/notification.service';
 
 @Injectable()
 export class LeaveRequestService {
@@ -14,6 +20,7 @@ export class LeaveRequestService {
     @InjectRepository(Request)
     private readonly leaveReqRepo: Repository<Request>,
     private readonly userService: UsersService,
+    private readonly notificationService: NotificationService,
   ) {}
 
   async createLeaveForm(
@@ -73,5 +80,118 @@ export class LeaveRequestService {
     return ownRequest;
   }
 
-  async decision(): Promise<any> {}
+  async decision(
+    requestID: number,
+    userID: number,
+    dto: DecisionDTO,
+  ): Promise<Request> {
+    const request = await this.leaveReqRepo.findOne({
+      where: { id: requestID },
+      relations: ['user'],
+      select: {
+        user: {
+          id: true,
+          displayName: true,
+        },
+      },
+    });
+
+    if (!request) throw new NotFoundException('Request not found');
+    const approver = await this.userService.findById(userID);
+
+    // hr
+    if (approver.role === Roles.Hr) {
+      if (dto.status === ResultStatus.Rejected) {
+        request.finalStatus = ResultStatus.Rejected;
+        request.views = LeaveStatus.Rejected_Request;
+        // for employee
+        await this.notificationService.createNotification({
+          message: `Youre request was Rejected by ${Roles.Hr}`,
+          user: request.user.id,
+        });
+        // for hr notif
+        await this.notificationService.createNotification({
+          message: `You rejected the request of ${request.user.displayName}`,
+          user: approver.id,
+        });
+      } else {
+        request.views = LeaveStatus.Pending_ProgramHead;
+        // employee
+        await this.notificationService.createNotification({
+          message: `Your'e request was Approved by ${Roles.Hr} and pending approval for ${Roles.ProgramHead}`,
+          user: request.user.id,
+        });
+        // notif for hr
+        await this.notificationService.createNotification({
+          message: `You approved the request of ${request.user.displayName}`,
+          user: approver.id,
+        });
+      }
+    }
+    // proghead
+    else if (approver.role === Roles.ProgramHead) {
+      if (dto.status === ResultStatus.Rejected) {
+        request.finalStatus = ResultStatus.Rejected;
+        request.views = LeaveStatus.Rejected_Request;
+        // for employee
+        await this.notificationService.createNotification({
+          message: `Youre request was Rejected by ${Roles.ProgramHead}`,
+          user: request.user.id,
+        });
+        // for proghead notif
+        await this.notificationService.createNotification({
+          message: `You rejected the request of ${request.user.displayName}`,
+          user: approver.id,
+        });
+      } else {
+        request.views = LeaveStatus.Pending_Admin;
+        // employee
+        await this.notificationService.createNotification({
+          message: `Your'e request was Approved by ${Roles.ProgramHead} and pending approval for ${Roles.Admin}`,
+          user: request.user.id,
+        });
+        // notif for prghead
+        await this.notificationService.createNotification({
+          message: `You approved the request of ${request.user.displayName}`,
+          user: approver.id,
+        });
+      }
+    }
+    // admin
+    else if (approver.role === Roles.Admin) {
+      if (dto.status === ResultStatus.Rejected) {
+        request.finalStatus = ResultStatus.Rejected;
+        request.views = LeaveStatus.Rejected_Request;
+        // for employee
+        await this.notificationService.createNotification({
+          message: `Youre request was Rejected by ${Roles.Admin}`,
+          user: request.user.id,
+        });
+        // for hr admin
+        await this.notificationService.createNotification({
+          message: `You rejected the request of ${request.user.displayName}`,
+          user: approver.id,
+        });
+      } else {
+        request.finalStatus = ResultStatus.Approved;
+        request.views = LeaveStatus.Approved_Request;
+        // employee
+        await this.notificationService.createNotification({
+          message: `Your'e request was Approved by ${Roles.Admin}`,
+          user: request.user.id,
+        });
+        // notif for admin
+        await this.notificationService.createNotification({
+          message: `You approved the request of ${request.user.displayName}`,
+          user: approver.id,
+        });
+      }
+    } else {
+      throw new BadRequestException(
+        'You are not allowed to decide this request',
+      );
+    }
+
+    return await this.leaveReqRepo.save(request);
+  }
 }
