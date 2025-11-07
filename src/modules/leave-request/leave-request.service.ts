@@ -51,6 +51,19 @@ export class LeaveRequestService {
       totalLeaveDays: totalDayLeave,
       user,
     });
+
+    const firstApprover = await this.userService.findUserByRole(Roles.Hr);
+    // requester notif
+    await this.notificationService.createNotification({
+      message: `Your request is pending for approval from ${firstApprover.role}`,
+      user: userId,
+    });
+
+    // notif for next approver
+    await this.notificationService.createNotification({
+      message: `You have pending request approval by ${user.displayName}`,
+      user: firstApprover.id,
+    });
     return await this.leaveReqRepo.save(leaveRequest);
   }
 
@@ -79,7 +92,6 @@ export class LeaveRequestService {
     });
     return ownRequest;
   }
-
   async decision(
     requestID: number,
     userID: number,
@@ -97,101 +109,128 @@ export class LeaveRequestService {
     });
 
     if (!request) throw new NotFoundException('Request not found');
+
     const approver = await this.userService.findById(userID);
 
-    // hr
+    // Determine next approver dynamically
+    let nextApprover: any = null;
     if (approver.role === Roles.Hr) {
+      nextApprover = await this.userService.findUserByRole(Roles.ProgramHead);
+    } else if (approver.role === Roles.ProgramHead) {
+      nextApprover = await this.userService.findUserByRole(Roles.Admin);
+    }
+
+    const employee = request.user;
+    const approverRole = approver.role;
+
+    // Helper function for notifications
+    const notify = async (message: string, userID: number) => {
+      await this.notificationService.createNotification({
+        message,
+        user: userID,
+      });
+    };
+
+    // HR DECISION
+    if (approverRole === Roles.Hr) {
       if (dto.status === ResultStatus.Rejected) {
         request.finalStatus = ResultStatus.Rejected;
         request.views = LeaveStatus.Rejected_Request;
-        // for employee
-        await this.notificationService.createNotification({
-          message: `Youre request was Rejected by ${Roles.Hr}`,
-          user: request.user.id,
-        });
-        // for hr notif
-        await this.notificationService.createNotification({
-          message: `You rejected the request of ${request.user.displayName}`,
-          user: approver.id,
-        });
+        // requester na notif
+        await notify(`Your request was Rejected by ${Roles.Hr}`, employee.id);
+        // the current approver notif
+        await notify(
+          `You rejected the request of ${employee.displayName}`,
+          approver.id,
+        );
       } else {
         request.views = LeaveStatus.Pending_ProgramHead;
-        // employee
-        await this.notificationService.createNotification({
-          message: `Your'e request was Approved by ${Roles.Hr} and pending approval for ${Roles.ProgramHead}`,
-          user: request.user.id,
-        });
-        // notif for hr
-        await this.notificationService.createNotification({
-          message: `You approved the request of ${request.user.displayName}`,
-          user: approver.id,
-        });
+        // requester na notif
+        await notify(
+          `Your request was Approved by ${Roles.Hr} and pending approval for ${Roles.ProgramHead}`,
+          employee.id,
+        );
+        // the current approver notif
+        await notify(
+          `You approved the request of ${employee.displayName}`,
+          approver.id,
+        );
+        // next approver notif
+        await notify(
+          `You have a pending request of approval from ${employee.displayName}`,
+          nextApprover.id,
+        );
       }
     }
-    // proghead
-    else if (approver.role === Roles.ProgramHead) {
+
+    // PROGRAM HEAD DECISION
+    else if (approverRole === Roles.ProgramHead) {
       if (dto.status === ResultStatus.Rejected) {
         request.finalStatus = ResultStatus.Rejected;
         request.views = LeaveStatus.Rejected_Request;
-        // for employee
-        await this.notificationService.createNotification({
-          message: `Youre request was Rejected by ${Roles.ProgramHead}`,
-          user: request.user.id,
-        });
-        // for proghead notif
-        await this.notificationService.createNotification({
-          message: `You rejected the request of ${request.user.displayName}`,
-          user: approver.id,
-        });
+
+        await notify(
+          `Your request was Rejected by ${Roles.ProgramHead}`,
+          employee.id,
+        );
+        await notify(
+          `You rejected the request of ${employee.displayName}`,
+          approver.id,
+        );
       } else {
         request.views = LeaveStatus.Pending_Admin;
-        // employee
-        await this.notificationService.createNotification({
-          message: `Your'e request was Approved by ${Roles.ProgramHead} and pending approval for ${Roles.Admin}`,
-          user: request.user.id,
-        });
-        // notif for prghead
-        await this.notificationService.createNotification({
-          message: `You approved the request of ${request.user.displayName}`,
-          user: approver.id,
-        });
+
+        await notify(
+          `Your request was Approved by ${Roles.ProgramHead} and pending approval for ${Roles.Admin}`,
+          employee.id,
+        );
+        await notify(
+          `You approved the request of ${employee.displayName}`,
+          approver.id,
+        );
+        await notify(
+          `You have a pending request of approval from ${employee.displayName}`,
+          nextApprover.id,
+        );
       }
     }
-    // admin
-    else if (approver.role === Roles.Admin) {
+
+    //  ADMIN DECISION
+    else if (approverRole === Roles.Admin) {
       if (dto.status === ResultStatus.Rejected) {
         request.finalStatus = ResultStatus.Rejected;
         request.views = LeaveStatus.Rejected_Request;
-        // for employee
-        await this.notificationService.createNotification({
-          message: `Youre request was Rejected by ${Roles.Admin}`,
-          user: request.user.id,
-        });
-        // for hr admin
-        await this.notificationService.createNotification({
-          message: `You rejected the request of ${request.user.displayName}`,
-          user: approver.id,
-        });
+
+        await notify(
+          `Your request was Rejected by ${Roles.Admin}`,
+          employee.id,
+        );
+        await notify(
+          `You rejected the request of ${employee.displayName}`,
+          approver.id,
+        );
       } else {
         request.finalStatus = ResultStatus.Approved;
         request.views = LeaveStatus.Approved_Request;
-        // employee
-        await this.notificationService.createNotification({
-          message: `Your'e request was Approved by ${Roles.Admin}`,
-          user: request.user.id,
-        });
-        // notif for admin
-        await this.notificationService.createNotification({
-          message: `You approved the request of ${request.user.displayName}`,
-          user: approver.id,
-        });
+
+        await notify(
+          `Your request was fully approved by ${Roles.Admin}`,
+          employee.id,
+        );
+        await notify(
+          `You approved the request of ${employee.displayName}`,
+          approver.id,
+        );
       }
     } else {
       throw new BadRequestException(
-        'You are not allowed to decide this request',
+        'You are not allowed to decide on this request',
       );
     }
 
     return await this.leaveReqRepo.save(request);
   }
 }
+
+// to do -> added delete request by employee only
+//       -> get add archive rejected and approved request
