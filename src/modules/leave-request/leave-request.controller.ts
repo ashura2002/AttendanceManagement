@@ -58,9 +58,17 @@ export class LeaveRequestController {
   // all approved request pang history
   @customRoleDecorator(Roles.Admin, Roles.Hr, Roles.ProgramHead)
   @HttpCode(HttpStatus.OK)
-  @Get('archive-approved')
-  async getAllApprovedArchiveRequest(): Promise<Request[]> {
-    return await this.leaveService.getAllApprovedArchiveRequest();
+  @Get('approved')
+  async getAllApprovedRequest(): Promise<Request[]> {
+    return await this.leaveService.getAllApprovedRequest();
+  }
+
+  // all rejected request pang history
+  @customRoleDecorator(Roles.Admin, Roles.Hr, Roles.ProgramHead)
+  @HttpCode(HttpStatus.OK)
+  @Get('rejected')
+  async getAllRejectedRequest(): Promise<Request[]> {
+    return await this.leaveService.getAllRejectedRequest();
   }
 
   @customRoleDecorator(Roles.Admin, Roles.Hr, Roles.ProgramHead)
