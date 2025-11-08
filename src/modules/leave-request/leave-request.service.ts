@@ -239,7 +239,15 @@ export class LeaveRequestService {
     if (!request) throw new NotFoundException('Request not found');
     await this.leaveReqRepo.remove(request);
   }
+
+  async getAllApprovedArchiveRequest(): Promise<Request[]> {
+    const approvedRequest = await this.leaveReqRepo.find({
+      where:{finalStatus: ResultStatus.Approved}
+    })
+    return approvedRequest
+  }
 }
 
 // to do -> added delete request by employee only - DONE
+//        -> added get all approved request - archive
 //       -> get add archive rejected and approved request

@@ -55,6 +55,14 @@ export class LeaveRequestController {
     return await this.leaveService.getOwnRequest(userId);
   }
 
+  // all approved request pang history
+  @customRoleDecorator(Roles.Admin, Roles.Hr, Roles.ProgramHead)
+  @HttpCode(HttpStatus.OK)
+  @Get('archive-approved')
+  async getAllApprovedArchiveRequest(): Promise<Request[]> {
+    return await this.leaveService.getAllApprovedArchiveRequest();
+  }
+
   @customRoleDecorator(Roles.Admin, Roles.Hr, Roles.ProgramHead)
   @HttpCode(HttpStatus.OK)
   @Patch(':id')
