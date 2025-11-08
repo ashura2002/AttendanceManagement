@@ -240,14 +240,17 @@ export class LeaveRequestService {
     await this.leaveReqRepo.remove(request);
   }
 
-  async getAllApprovedArchiveRequest(): Promise<Request[]> {
+  async getAllApprovedRequest(): Promise<Request[]> {
     const approvedRequest = await this.leaveReqRepo.find({
-      where:{finalStatus: ResultStatus.Approved}
-    })
-    return approvedRequest
+      where: { finalStatus: ResultStatus.Approved },
+    });
+    return approvedRequest;
+  }
+
+  async getAllRejectedRequest(): Promise<any> {
+    const rejectedRequest = await this.leaveReqRepo.find({
+      where: { finalStatus: ResultStatus.Rejected },
+    });
+    return rejectedRequest;
   }
 }
-
-// to do -> added delete request by employee only - DONE
-//        -> added get all approved request - archive
-//       -> get add archive rejected and approved request
