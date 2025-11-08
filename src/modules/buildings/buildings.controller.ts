@@ -19,7 +19,9 @@ import { Roles } from 'src/common/enums/Roles.enum';
 import { Building } from './entities/building.entity';
 import { CreateBuildingDTO } from './dto/create-building.dto';
 import { UpdateBuildingDTO } from './dto/update-building.dto';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
+@ApiBearerAuth('access-token')
 @Controller('buildings')
 @UseGuards(JwtAuthGuard, RoleGuard)
 export class BuildingController {

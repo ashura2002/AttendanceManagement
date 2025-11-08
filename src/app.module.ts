@@ -11,6 +11,7 @@ import { DepartmentsModule } from './modules/departments/departments.module';
 import { NotificationModule } from './modules/notification/notification.module';
 import { LeaveRequestModule } from './modules/leave-request/leave-request.module';
 import { BuildingModule } from './modules/buildings/buildings.module';
+import { RoomModule } from './modules/rooms/room.module';
 
 @Module({
   imports: [
@@ -44,7 +45,8 @@ import { BuildingModule } from './modules/buildings/buildings.module';
     DepartmentsModule,
     NotificationModule,
     LeaveRequestModule,
-    BuildingModule
+    BuildingModule,
+    RoomModule,
   ],
   controllers: [AppController],
   providers: [

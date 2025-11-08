@@ -9,6 +9,9 @@ export class Building {
   @Column()
   buildingName: string;
 
+  @Column({ default: 'Svc Main Campus' })
+  location: string;
+
   @OneToMany(() => Room, (room) => room.building)
   rooms: Room[];
 }
