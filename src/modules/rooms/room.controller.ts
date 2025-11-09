@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
   UseGuards,
 } from '@nestjs/common';
@@ -17,6 +18,7 @@ import { Roles } from 'src/common/enums/Roles.enum';
 import { Room } from './entities/room.entity';
 import { CreateRoomDTO } from './dto/create-room.dto';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import { UpdateRoomDTO } from './dto/update-room.dt';
 
 @Controller('rooms')
 @UseGuards(JwtAuthGuard, RoleGuard)
@@ -38,6 +40,16 @@ export class RoomController {
     return await this.roomService.createRoom(createRoomDTO);
   }
 
+  @Patch(':id')
+  @HttpCode(HttpStatus.OK)
+  @customRoleDecorator(Roles.Admin, Roles.Hr, Roles.ProgramHead)
+  async updateRoom(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updatedRoomDTO: UpdateRoomDTO,
+  ): Promise<Room> {
+    return this.roomService.updateRoom(id, updatedRoomDTO);
+  }
+
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @customRoleDecorator(Roles.Admin, Roles.Hr, Roles.ProgramHead)
@@ -46,5 +58,3 @@ export class RoomController {
   }
 }
 
-// to do -> add update room
-//      -> add remove room
