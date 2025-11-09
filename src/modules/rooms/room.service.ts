@@ -8,6 +8,8 @@ import { Room } from './entities/room.entity';
 import { Repository } from 'typeorm';
 import { CreateRoomDTO } from './dto/create-room.dto';
 import { BuildingService } from '../buildings/buildings.service';
+import { UpdateBuildingDTO } from '../buildings/dto/update-building.dto';
+import { UpdateRoomDTO } from './dto/update-room.dt';
 
 @Injectable()
 export class RoomService {
@@ -44,4 +46,23 @@ export class RoomService {
     if (!room) throw new NotFoundException('Room not found');
     return room;
   }
+
+  async updateRoom(id: number, updateRoomDTO: UpdateRoomDTO): Promise<Room> {
+    const room = await this.roomRepo.findOne({
+      where: { id },
+    });
+    if (!room) throw new NotFoundException('Room not found');
+    const building = await this.buildingService.getBuildingById(
+      updateRoomDTO.building,
+    );
+    const updatedRooms = {
+      ...updateRoomDTO,
+      building: building,
+    };
+    Object.assign(room, updatedRooms);
+    return await this.roomRepo.save(room);
+  }
 }
+// to do -> add update room - DONE
+//      -> try to fix updated with same name return error exception
+//      -> add remove room
