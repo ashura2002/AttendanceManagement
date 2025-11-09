@@ -8,6 +8,7 @@ import { Profile } from './entities/profile.entity';
 import { Repository } from 'typeorm';
 import { CreateProfileDTO } from './dto/create-profile.dto';
 import { UsersService } from '../users/users.service';
+import { UpdateProfileDTO } from './dto/update-profile.dto';
 
 @Injectable()
 export class ProfileService {
@@ -51,10 +52,38 @@ export class ProfileService {
         },
       },
     });
-    if (!profile) throw new NotFoundException('Profile not found');
+    if (!profile)
+      throw new NotFoundException(
+        `Seems like you haven't created your profile yet.`,
+      );
     return profile;
   }
-}
 
-// to do -> update profile
-//        -> delete profile
+  async updateProfile(
+    id: number,
+    userId: number,
+    updateProfileDTO: UpdateProfileDTO,
+  ): Promise<Profile> {
+    const profile = await this.profileRepo.findOne({
+      where: { id },
+      relations: ['user'],
+    });
+    if (!profile) throw new NotFoundException('Profile not found');
+    if (profile.user.id !== userId)
+      throw new BadRequestException('You can only modify your own profile');
+    Object.assign(profile, updateProfileDTO);
+    return await this.profileRepo.save(profile);
+  }
+
+  async deleteProfile(id: number, userId: number): Promise<void> {
+    const profile = await this.profileRepo.findOne({
+      where: { id },
+      relations: ['user'],
+    });
+    if (!profile) throw new NotFoundException('Profile not found');
+
+    if (profile.user.id !== userId)
+      throw new BadRequestException('You can only delete your own profile');
+    await this.profileRepo.remove(profile);
+  }
+}
