@@ -55,6 +55,11 @@ export class RoomService {
     const building = await this.buildingService.getBuildingById(
       updateRoomDTO.building,
     );
+    //  check if the update value of room name is equal to existing room name
+    if (updateRoomDTO.roomName === room.roomName)
+      throw new BadRequestException(
+        `${updateRoomDTO.roomName} is already exist, Update with unique name`,
+      );
     const updatedRooms = {
       ...updateRoomDTO,
       building: building,
@@ -62,7 +67,13 @@ export class RoomService {
     Object.assign(room, updatedRooms);
     return await this.roomRepo.save(room);
   }
+
+  async deleteRoom(id: number): Promise<void> {
+    const room = await this.roomRepo.findOne({ where: { id } });
+    if (!room) throw new NotFoundException('Room not found');
+    await this.roomRepo.remove(room);
+  }
 }
 // to do -> add update room - DONE
-//      -> try to fix updated with same name return error exception
-//      -> add remove room
+//      -> try to fix updated with same name return error exception - DONE
+//      -> add remove room - DONE
