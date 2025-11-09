@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -56,5 +57,11 @@ export class RoomController {
   async getRoomById(@Param('id', ParseIntPipe) id: number): Promise<Room> {
     return this.roomService.getRoomById(id);
   }
-}
 
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @customRoleDecorator(Roles.Admin, Roles.Hr, Roles.ProgramHead)
+  async deleteRoom(@Param('id', ParseIntPipe) id: number): Promise<void> {
+    return await this.roomService.deleteRoom(id);
+  }
+}
