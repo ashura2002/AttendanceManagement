@@ -12,6 +12,7 @@ import { NotificationModule } from './modules/notification/notification.module';
 import { LeaveRequestModule } from './modules/leave-request/leave-request.module';
 import { BuildingModule } from './modules/buildings/buildings.module';
 import { RoomModule } from './modules/rooms/room.module';
+import { ProfileModule } from './modules/profiles/profile.module';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { RoomModule } from './modules/rooms/room.module';
     LeaveRequestModule,
     BuildingModule,
     RoomModule,
+    ProfileModule,
   ],
   controllers: [AppController],
   providers: [
