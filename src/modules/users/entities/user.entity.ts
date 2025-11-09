@@ -5,6 +5,7 @@ import {
   Entity,
   ManyToOne,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -14,6 +15,7 @@ import { Roles } from 'src/common/enums/Roles.enum';
 import { Department } from 'src/modules/departments/entities/department.entity';
 import { Notification } from 'src/modules/notification/entities/notification.entity';
 import { Request } from 'src/modules/leave-request/entities/request.entity';
+import { Profile } from 'src/modules/profiles/entities/profile.entity';
 
 @Entity()
 export class User {
@@ -55,10 +57,13 @@ export class User {
   notifications: Notification[];
 
   @OneToMany(() => Request, (request) => request.user)
-  requests: Request[]
+  requests: Request[];
 
   @BeforeInsert()
   async hashPassword() {
     this.password = await bcrypt.hash(this.password, 10);
   }
+
+  @OneToOne(() => User, (user) => user.profile)
+  profile: Profile;
 }
