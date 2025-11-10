@@ -7,6 +7,8 @@ import {
   Param,
   ParseIntPipe,
   Post,
+  Put,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth } from '@nestjs/swagger';
@@ -17,6 +19,7 @@ import { customRoleDecorator } from 'src/common/decorators/Roles.decorator';
 import { Roles } from 'src/common/enums/Roles.enum';
 import { CreateSubjectAssignmentDTO } from './dto/create-assignment.dto';
 import { AssignmentSubject } from './entities/assignment.entity';
+import { UpdateAssignmentDTO } from './dto/update-assignment.dto';
 
 @Controller('subject-assignment')
 @UseGuards(JwtAuthGuard, RoleGuard)
@@ -33,7 +36,15 @@ export class AssignmentController {
     return this.assignSubjectService.createAssignment(createAssignmentDTO);
   }
 
-  @Get(':userId/loads')
+  @Get('own')
+  @HttpCode(HttpStatus.OK)
+  @customRoleDecorator(Roles.Employee)
+  async getAllOwnSubjectAssignments(@Req() req): Promise<AssignmentSubject[]> {
+    const { userId } = req.user;
+    return await this.assignSubjectService.getAllOwnSubjectAssignments(userId);
+  }
+
+  @Get('admin/:userId/loads')
   @HttpCode(HttpStatus.OK)
   @customRoleDecorator(Roles.Admin, Roles.Hr, Roles.ProgramHead)
   async getEmployeesAssignments(
@@ -41,4 +52,19 @@ export class AssignmentController {
   ): Promise<AssignmentSubject[]> {
     return await this.assignSubjectService.getEmployeesAssignment(userId);
   }
+
+  @Put(':id')
+  @HttpCode(HttpStatus.OK)
+  @customRoleDecorator(Roles.Admin, Roles.Hr, Roles.ProgramHead)
+  async updateAssignment(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateAssignmentDTO: UpdateAssignmentDTO,
+  ): Promise<AssignmentSubject> {
+    return await this.assignSubjectService.updateAssignment(
+      id,
+      updateAssignmentDTO,
+    );
+  }
 }
+
+// to do -> delete assignment
