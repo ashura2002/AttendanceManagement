@@ -1,10 +1,15 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AssignmentSubject } from './entities/assignment.entity';
 import { Repository } from 'typeorm';
 import { CreateSubjectAssignmentDTO } from './dto/create-assignment.dto';
 import { UsersService } from '../users/users.service';
 import { SubjectService } from '../subjects/subject.service';
+import { UpdateAssignmentDTO } from './dto/update-assignment.dto';
 
 @Injectable()
 export class AssignmentService {
@@ -45,5 +50,27 @@ export class AssignmentService {
       relations: ['subject'],
     });
     return employeesLoad;
+  }
+
+  async getAllOwnSubjectAssignments(
+    userId: number,
+  ): Promise<AssignmentSubject[]> {
+    const ownSubjectAssignment = await this.assignSubjectRepo.find({
+      where: { user: { id: userId } },
+      relations: ['subject'],
+    });
+    return ownSubjectAssignment;
+  }
+
+  async updateAssignment(
+    assignmentID: number,
+    updateAssignmentDTO: UpdateAssignmentDTO,
+  ): Promise<AssignmentSubject> {
+    const assignment = await this.assignSubjectRepo.findOne({
+      where: { id: assignmentID },
+    });
+    if (!assignment) throw new NotFoundException('Assignment does not exist');
+    Object.assign(assignment, updateAssignmentDTO);
+    return await this.assignSubjectRepo.save(assignment);
   }
 }
