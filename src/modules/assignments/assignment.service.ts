@@ -73,4 +73,13 @@ export class AssignmentService {
     Object.assign(assignment, updateAssignmentDTO);
     return await this.assignSubjectRepo.save(assignment);
   }
+
+  async deleteAssignment(assignmentID: number): Promise<void> {
+    const assignment = await this.assignSubjectRepo.findOne({
+      where: { id: assignmentID },
+    });
+    if (!assignment)
+      throw new NotFoundException('Subject assignment not found');
+    await this.assignSubjectRepo.remove(assignment);
+  }
 }

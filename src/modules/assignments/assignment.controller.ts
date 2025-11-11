@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -65,6 +66,13 @@ export class AssignmentController {
       updateAssignmentDTO,
     );
   }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @customRoleDecorator(Roles.Admin, Roles.Hr, Roles.ProgramHead)
+  async deleteAssignment(@Param('id', ParseIntPipe) id: number): Promise<void> {
+    return await this.assignSubjectService.deleteAssignment(id);
+  }
 }
 
-// to do -> delete assignment
+// added track for the user who approved or rejected the request  -> for frontend
