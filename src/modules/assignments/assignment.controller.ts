@@ -74,5 +74,3 @@ export class AssignmentController {
     return await this.assignSubjectService.deleteAssignment(id);
   }
 }
-
-// added track for the user who approved or rejected the request  -> for frontend

@@ -137,6 +137,7 @@ export class LeaveRequestService {
       if (dto.status === ResultStatus.Rejected) {
         request.finalStatus = ResultStatus.Rejected;
         request.views = LeaveStatus.Rejected_Request;
+        request.hr = ResultStatus.Rejected;
         // requester na notif
         await notify(`Your request was Rejected by ${Roles.Hr}`, employee.id);
         // the current approver notif
@@ -145,6 +146,7 @@ export class LeaveRequestService {
           approver.id,
         );
       } else {
+        request.hr = ResultStatus.Approved;
         request.views = LeaveStatus.Pending_ProgramHead;
         // requester na notif
         await notify(
@@ -169,7 +171,7 @@ export class LeaveRequestService {
       if (dto.status === ResultStatus.Rejected) {
         request.finalStatus = ResultStatus.Rejected;
         request.views = LeaveStatus.Rejected_Request;
-
+        request.programhead = ResultStatus.Rejected;
         await notify(
           `Your request was Rejected by ${Roles.ProgramHead}`,
           employee.id,
@@ -180,7 +182,7 @@ export class LeaveRequestService {
         );
       } else {
         request.views = LeaveStatus.Pending_Admin;
-
+        request.programhead = ResultStatus.Approved;
         await notify(
           `Your request was Approved by ${Roles.ProgramHead} and pending approval for ${Roles.Admin}`,
           employee.id,
@@ -201,7 +203,7 @@ export class LeaveRequestService {
       if (dto.status === ResultStatus.Rejected) {
         request.finalStatus = ResultStatus.Rejected;
         request.views = LeaveStatus.Rejected_Request;
-
+        request.admin = ResultStatus.Rejected;
         await notify(
           `Your request was Rejected by ${Roles.Admin}`,
           employee.id,
@@ -213,7 +215,7 @@ export class LeaveRequestService {
       } else {
         request.finalStatus = ResultStatus.Approved;
         request.views = LeaveStatus.Approved_Request;
-
+        request.admin = ResultStatus.Approved;
         await notify(
           `Your request was fully approved by ${Roles.Admin}`,
           employee.id,

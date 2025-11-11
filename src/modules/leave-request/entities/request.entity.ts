@@ -31,6 +31,15 @@ export class Request {
   totalLeaveDays: number;
 
   @Column({ type: 'enum', enum: ResultStatus, default: ResultStatus.Pending })
+  hr: ResultStatus;
+
+  @Column({ type: 'enum', enum: ResultStatus, default: ResultStatus.Pending })
+  programhead: ResultStatus;
+
+  @Column({ type: 'enum', enum: ResultStatus, default: ResultStatus.Pending })
+  admin: ResultStatus;
+
+  @Column({ type: 'enum', enum: ResultStatus, default: ResultStatus.Pending })
   finalStatus: ResultStatus;
 
   @ManyToOne(() => User, (user) => user.requests)
