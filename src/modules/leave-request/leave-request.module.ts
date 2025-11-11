@@ -8,7 +8,12 @@ import { UsersModule } from '../users/users.module';
 import { NotificationModule } from '../notification/notification.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Request]), JwtModule, UsersModule,NotificationModule],
+  imports: [
+    TypeOrmModule.forFeature([Request]),
+    JwtModule,
+    UsersModule,
+    NotificationModule,
+  ],
   controllers: [LeaveRequestController],
   providers: [LeaveRequestService],
 })
