@@ -2,9 +2,11 @@ import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { join } from 'path';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const port = process.env.PORT ?? 8005;
   app.useGlobalPipes(
     new ValidationPipe({
@@ -16,6 +18,7 @@ async function bootstrap() {
 
   const reflector = app.get(Reflector);
   app.useGlobalInterceptors(new ClassSerializerInterceptor(reflector));
+  app.useStaticAssets(join(__dirname, '..', 'uploads'));
 
   // for swagger
   const config = new DocumentBuilder()

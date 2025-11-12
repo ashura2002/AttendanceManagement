@@ -21,7 +21,9 @@ export class ProfileService {
   async createProfile(
     userId: number,
     createProfileDTO: CreateProfileDTO,
+    avatar?: Express.Multer.File,
   ): Promise<Profile> {
+    console.log(avatar);
     const user = await this.userService.findById(userId);
     // find profile if already exist on db
     const existingProfile = await this.profileRepo.findOne({
@@ -31,8 +33,10 @@ export class ProfileService {
       throw new BadRequestException(
         'You already created your profile if you want to modify it try to update',
       );
+
     const profile = this.profileRepo.create({
       ...createProfileDTO,
+      avatar: avatar ? `uploads/${avatar.filename}` : undefined,
       user: user,
     });
     return await this.profileRepo.save(profile);

@@ -25,7 +25,7 @@ export class Profile {
   address: string;
 
   @Column({ nullable: true })
-  avatar: string;
+  avatar?: string;
 
   @Column()
   contactNumber: string;
