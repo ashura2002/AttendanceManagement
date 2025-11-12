@@ -9,6 +9,7 @@ import {
   ParseIntPipe,
   Post,
   Put,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -40,9 +41,15 @@ export class AssignmentController {
   @Get('own')
   @HttpCode(HttpStatus.OK)
   @customRoleDecorator(Roles.Employee)
-  async getAllOwnSubjectAssignments(@Req() req): Promise<AssignmentSubject[]> {
+  async getAllOwnSubjectAssignments(
+    @Req() req,
+    @Query('date') date: string,
+  ): Promise<AssignmentSubject[]> {
     const { userId } = req.user;
-    return await this.assignSubjectService.getAllOwnSubjectAssignments(userId);
+    return await this.assignSubjectService.getAllOwnSubjectAssignments(
+      userId,
+      date,
+    );
   }
 
   @Get('admin/:userId/loads')

@@ -30,13 +30,13 @@ export class Request {
   @Column({ type: 'int', nullable: true })
   totalLeaveDays: number;
 
-  @Column({ type: 'enum', enum: ResultStatus, default: ResultStatus.Pending })
+  @Column({ type: 'enum', enum: ResultStatus, nullable: true })
   hr: ResultStatus;
 
-  @Column({ type: 'enum', enum: ResultStatus, default: ResultStatus.Pending })
+  @Column({ type: 'enum', enum: ResultStatus, nullable: true })
   programhead: ResultStatus;
 
-  @Column({ type: 'enum', enum: ResultStatus, default: ResultStatus.Pending })
+  @Column({ type: 'enum', enum: ResultStatus, nullable: true })
   admin: ResultStatus;
 
   @Column({ type: 'enum', enum: ResultStatus, default: ResultStatus.Pending })

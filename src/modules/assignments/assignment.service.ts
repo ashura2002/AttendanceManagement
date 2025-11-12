@@ -10,6 +10,7 @@ import { CreateSubjectAssignmentDTO } from './dto/create-assignment.dto';
 import { UsersService } from '../users/users.service';
 import { SubjectService } from '../subjects/subject.service';
 import { UpdateAssignmentDTO } from './dto/update-assignment.dto';
+import { ScheduleSubject } from 'src/common/enums/scheduleSubject.enum';
 
 @Injectable()
 export class AssignmentService {
@@ -54,12 +55,23 @@ export class AssignmentService {
 
   async getAllOwnSubjectAssignments(
     userId: number,
+    date: string,
   ): Promise<AssignmentSubject[]> {
-    const ownSubjectAssignment = await this.assignSubjectRepo.find({
-      where: { user: { id: userId } },
-      relations: ['subject'],
-    });
-    return ownSubjectAssignment;
+    const ownSubjectAssignment = this.assignSubjectRepo
+      .createQueryBuilder('assign')
+      .leftJoinAndSelect('assign.subject', 'subject')
+      .where('assign.userId = :userId', { userId });
+
+    if (date) {
+      const dayName = this.getDayNameFromDate(date);
+      if (dayName) {
+        ownSubjectAssignment.andWhere('assign.daySchedule LIKE :day', {
+          day: `%${dayName}%`,
+        });
+      }
+    }
+
+    return await ownSubjectAssignment.getMany();
   }
 
   async updateAssignment(
@@ -82,4 +94,23 @@ export class AssignmentService {
       throw new NotFoundException('Subject assignment not found');
     await this.assignSubjectRepo.remove(assignment);
   }
+
+  private getDayNameFromDate(dateString: string): ScheduleSubject | null {
+    const date = new Date(dateString);
+    const day = date.getDay();
+
+    const map: Record<number, ScheduleSubject> = {
+      0: ScheduleSubject.Sun,
+      1: ScheduleSubject.Mon,
+      2: ScheduleSubject.Tue,
+      3: ScheduleSubject.Wed,
+      4: ScheduleSubject.Thurs,
+      5: ScheduleSubject.Fri,
+      6: ScheduleSubject.Sat,
+    };
+
+    return map[day] || null;
+  }
 }
+// to do -> refactor relation of assignment and subject
+// prob if that subject was already added then other employee can't get that subject
