@@ -22,6 +22,7 @@ import { Roles } from 'src/common/enums/Roles.enum';
 import { CreateSubjectAssignmentDTO } from './dto/create-assignment.dto';
 import { AssignmentSubject } from './entities/assignment.entity';
 import { UpdateAssignmentDTO } from './dto/update-assignment.dto';
+import { SkipThrottle } from '@nestjs/throttler';
 
 @Controller('subject-assignment')
 @UseGuards(JwtAuthGuard, RoleGuard)
@@ -38,6 +39,7 @@ export class AssignmentController {
     return this.assignSubjectService.createAssignment(createAssignmentDTO);
   }
 
+  @SkipThrottle()
   @Get('own')
   @HttpCode(HttpStatus.OK)
   @customRoleDecorator(Roles.Employee)
@@ -52,6 +54,8 @@ export class AssignmentController {
     );
   }
 
+
+  @SkipThrottle()
   @Get('admin/:userId/loads')
   @HttpCode(HttpStatus.OK)
   @customRoleDecorator(Roles.Admin, Roles.Hr, Roles.ProgramHead)

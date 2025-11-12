@@ -2,14 +2,21 @@ import { Remarks } from 'src/common/enums/remarkOptions.enum';
 import { ScheduleSubject } from 'src/common/enums/scheduleSubject.enum';
 import { Subject } from 'src/modules/subjects/entities/subject.entity';
 import { User } from 'src/modules/users/entities/user.entity';
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinTable,
+  ManyToMany,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity()
 export class AssignmentSubject {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'simple-array' })
+  @Column('text', { array: true })
   daySchedule: ScheduleSubject[];
 
   @Column()
@@ -24,6 +31,7 @@ export class AssignmentSubject {
   @ManyToOne(() => User, (user) => user.subjectAssignments)
   user: User;
 
-  @ManyToOne(() => Subject, (sub) => sub.assignments)
-  subject: Subject;
+  @ManyToMany(() => Subject, (subject) => subject.assignments)
+  @JoinTable()
+  subjects: Subject[];
 }
