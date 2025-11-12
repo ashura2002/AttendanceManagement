@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AssignmentSubject } from './entities/assignment.entity';
 import { Repository } from 'typeorm';
@@ -25,53 +21,44 @@ export class AssignmentService {
     createAssignmentDTO: CreateSubjectAssignmentDTO,
   ): Promise<AssignmentSubject> {
     const { user, subjects } = createAssignmentDTO;
-
     const employee = await this.userService.findById(user);
     const subjectToAssign = await this.subjectService.getSubjectById(subjects);
-    const existedSubject = await this.assignSubjectRepo.findOne({
-      where: { subject: { id: subjectToAssign.id } },
-      relations: ['subject'],
-    });
-    if (existedSubject)
-      throw new BadRequestException(
-        `${existedSubject.subject.subjectName} is already been added.`,
-      );
-    const subjectAssignment = this.assignSubjectRepo.create({
+
+    const assignment = this.assignSubjectRepo.create({
       ...createAssignmentDTO,
       user: employee,
-      subject: subjectToAssign,
+      subjects: [subjectToAssign], // array of sub
     });
-    return await this.assignSubjectRepo.save(subjectAssignment);
+    return await this.assignSubjectRepo.save(assignment);
   }
 
   async getEmployeesAssignment(userId: number): Promise<AssignmentSubject[]> {
     const user = await this.userService.findById(userId);
-    const employeesLoad = await this.assignSubjectRepo.find({
+    const assignment = await this.assignSubjectRepo.find({
       where: { user: { id: user.id } },
-      relations: ['subject'],
+      relations: ['subjects'],
     });
-    return employeesLoad;
+    return assignment;
   }
 
   async getAllOwnSubjectAssignments(
     userId: number,
     date: string,
   ): Promise<AssignmentSubject[]> {
-    const ownSubjectAssignment = this.assignSubjectRepo
-      .createQueryBuilder('assign')
-      .leftJoinAndSelect('assign.subject', 'subject')
-      .where('assign.userId = :userId', { userId });
+    const query = this.assignSubjectRepo
+      .createQueryBuilder('assignment')
+      .leftJoinAndSelect('assignment.subjects', 'subjects')
+      .where('assignment.user =:userId', { userId });
 
     if (date) {
-      const dayName = this.getDayNameFromDate(date);
+      const dayName = this.getdayNameByDate(date);
+      // pang debug
+      if (!dayName) console.warn(`Invalid date provided: ${date}`);
       if (dayName) {
-        ownSubjectAssignment.andWhere('assign.daySchedule LIKE :day', {
-          day: `%${dayName}%`,
-        });
+        query.andWhere(':dayName = ANY(assignment.daySchedule)', { dayName });
       }
     }
-
-    return await ownSubjectAssignment.getMany();
+    return await query.getMany();
   }
 
   async updateAssignment(
@@ -95,11 +82,11 @@ export class AssignmentService {
     await this.assignSubjectRepo.remove(assignment);
   }
 
-  private getDayNameFromDate(dateString: string): ScheduleSubject | null {
+  private getdayNameByDate(dateString: string): ScheduleSubject | null {
     const date = new Date(dateString);
     const day = date.getDay();
 
-    const map: Record<number, ScheduleSubject> = {
+    const daysAndDate: Record<number, ScheduleSubject> = {
       0: ScheduleSubject.Sun,
       1: ScheduleSubject.Mon,
       2: ScheduleSubject.Tue,
@@ -109,8 +96,6 @@ export class AssignmentService {
       6: ScheduleSubject.Sat,
     };
 
-    return map[day] || null;
+    return daysAndDate[day] || null;
   }
 }
-// to do -> refactor relation of assignment and subject
-// prob if that subject was already added then other employee can't get that subject
