@@ -23,6 +23,7 @@ import { CreateProfileDTO } from './dto/create-profile.dto';
 import { UpdateProfileDTO } from './dto/update-profile.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
+import { multerConfig } from 'src/config/multer.config';
 
 @Controller('profile')
 @ApiBearerAuth('access-token')
@@ -32,19 +33,7 @@ export class ProfileController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  @UseInterceptors(
-    FileInterceptor('avatar', {
-      storage: diskStorage({
-        destination: './uploads',
-        filename(req, file, callback) {
-          const randomCharacter =
-            Date.now() + '-' + Math.round(Math.random() * 1e9);
-          const extentsion = file.originalname.split('.').pop();
-          callback(null, `${file.fieldname}-${randomCharacter}.${extentsion}`);
-        },
-      }),
-    }),
-  )
+  @UseInterceptors(FileInterceptor('avatar', multerConfig))
   async createProfile(
     @Req() req,
     @Body() createProfileDTO: CreateProfileDTO,
@@ -63,16 +52,19 @@ export class ProfileController {
 
   @Patch(':id')
   @HttpCode(HttpStatus.OK)
+  @UseInterceptors(FileInterceptor('avatar', multerConfig))
   async updateProfile(
     @Param('id', ParseIntPipe) id: number,
     @Req() req,
     @Body() updateProfileDTO: UpdateProfileDTO,
+    @UploadedFile() avatar: Express.Multer.File,
   ): Promise<Profile> {
     const { userId } = req.user;
     return await this.profileService.updateProfile(
       id,
       userId,
       updateProfileDTO,
+      avatar,
     );
   }
 

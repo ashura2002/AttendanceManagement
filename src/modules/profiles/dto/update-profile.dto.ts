@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import { IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class UpdateProfileDTO {
@@ -15,6 +16,7 @@ export class UpdateProfileDTO {
   @ApiProperty()
   @IsNotEmpty()
   @IsInt()
+  @Type(() => Number)
   age: number;
 
   @ApiProperty()
