@@ -79,5 +79,3 @@ export class ProfileController {
   }
 }
 
-// implement file upload on update profile
-// need to add relation room and assignment

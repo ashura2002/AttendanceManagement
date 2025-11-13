@@ -6,6 +6,7 @@ import { AssignmentSubject } from './entities/assignment.entity';
 import { JwtModule } from '@nestjs/jwt';
 import { SubjectModule } from '../subjects/subject.module';
 import { UsersModule } from '../users/users.module';
+import { RoomModule } from '../rooms/room.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { UsersModule } from '../users/users.module';
     JwtModule,
     SubjectModule,
     UsersModule,
+    RoomModule,
   ],
   controllers: [AssignmentController],
   providers: [AssignmentService],

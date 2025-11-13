@@ -58,7 +58,7 @@ export class RoomService {
     //  check if the update value of room name is equal to existing room name
     if (updateRoomDTO.roomName === room.roomName)
       throw new BadRequestException(
-        `${updateRoomDTO.roomName} is already exist, Update with unique name`,
+        `${updateRoomDTO.roomName} is already exist, Update room with unique name`,
       );
     const updatedRooms = {
       ...updateRoomDTO,
@@ -74,6 +74,3 @@ export class RoomService {
     await this.roomRepo.remove(room);
   }
 }
-// to do -> add update room - DONE
-//      -> try to fix updated with same name return error exception - DONE
-//      -> add remove room - DONE

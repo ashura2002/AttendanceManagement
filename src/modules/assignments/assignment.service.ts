@@ -7,6 +7,7 @@ import { UsersService } from '../users/users.service';
 import { SubjectService } from '../subjects/subject.service';
 import { UpdateAssignmentDTO } from './dto/update-assignment.dto';
 import { ScheduleSubject } from 'src/common/enums/scheduleSubject.enum';
+import { RoomService } from '../rooms/room.service';
 
 @Injectable()
 export class AssignmentService {
@@ -15,18 +16,21 @@ export class AssignmentService {
     private readonly assignSubjectRepo: Repository<AssignmentSubject>,
     private readonly userService: UsersService,
     private readonly subjectService: SubjectService,
+    private readonly roomService: RoomService,
   ) {}
 
   async createAssignment(
     createAssignmentDTO: CreateSubjectAssignmentDTO,
   ): Promise<AssignmentSubject> {
-    const { user, subjects } = createAssignmentDTO;
+    const { user, subjects, room } = createAssignmentDTO;
     const employee = await this.userService.findById(user);
+    const existedRoom = await this.roomService.getRoomById(room);
     const subjectToAssign = await this.subjectService.getSubjectById(subjects);
 
     const assignment = this.assignSubjectRepo.create({
       ...createAssignmentDTO,
       user: employee,
+      room: existedRoom,
       subjects: [subjectToAssign], // array of sub
     });
     return await this.assignSubjectRepo.save(assignment);
@@ -48,6 +52,8 @@ export class AssignmentService {
     const query = this.assignSubjectRepo
       .createQueryBuilder('assignment')
       .leftJoinAndSelect('assignment.subjects', 'subjects')
+      .leftJoinAndSelect('assignment.room', 'room')
+      .leftJoinAndSelect('room.building', 'building')
       .where('assignment.user =:userId', { userId });
 
     if (date) {
