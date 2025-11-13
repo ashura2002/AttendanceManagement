@@ -67,6 +67,7 @@ export class ProfileService {
     id: number,
     userId: number,
     updateProfileDTO: UpdateProfileDTO,
+    avatar: Express.Multer.File,
   ): Promise<Profile> {
     const profile = await this.profileRepo.findOne({
       where: { id },
@@ -75,6 +76,13 @@ export class ProfileService {
     if (!profile) throw new NotFoundException('Profile not found');
     if (profile.user.id !== userId)
       throw new BadRequestException('You can only modify your own profile');
+
+    if (avatar) {
+      updateProfileDTO.avatar = avatar
+        ? `uploads/${avatar.filename}`
+        : undefined;
+    }
+
     Object.assign(profile, updateProfileDTO);
     return await this.profileRepo.save(profile);
   }
