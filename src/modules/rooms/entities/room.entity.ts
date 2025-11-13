@@ -1,5 +1,12 @@
+import { AssignmentSubject } from 'src/modules/assignments/entities/assignment.entity';
 import { Building } from 'src/modules/buildings/entities/building.entity';
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity()
 export class Room {
@@ -11,4 +18,7 @@ export class Room {
 
   @ManyToOne(() => Building, (building) => building.rooms)
   building: Building;
+
+  @OneToMany(() => AssignmentSubject, (assign) => assign.room)
+  assign: AssignmentSubject;
 }

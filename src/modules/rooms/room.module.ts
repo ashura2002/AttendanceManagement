@@ -10,5 +10,6 @@ import { BuildingModule } from '../buildings/buildings.module';
   imports: [TypeOrmModule.forFeature([Room]), JwtModule, BuildingModule],
   controllers: [RoomController],
   providers: [RoomService],
+  exports: [RoomService],
 })
 export class RoomModule {}

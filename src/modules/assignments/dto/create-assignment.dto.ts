@@ -10,6 +10,11 @@ export class CreateSubjectAssignmentDTO {
 
   @ApiProperty()
   @IsNotEmpty()
+  @IsInt()
+  room: number;
+
+  @ApiProperty()
+  @IsNotEmpty()
   @IsEnum(ScheduleSubject, { each: true })
   daySchedule: ScheduleSubject[];
 
