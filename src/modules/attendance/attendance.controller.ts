@@ -10,9 +10,15 @@ import { AttendanceService } from './attendance.service';
 export class AttendanceController {
   constructor(private readonly attendanceService: AttendanceService) {}
 
-  @Post()
+  @Post('time-in')
   async timeIn(@Req() req): Promise<any> {
     const { userId } = req.user;
-    return await this.attendanceService.timeIn();
+    return await this.attendanceService.timeIn(userId);
+  }
+
+  @Post('time-out')
+  async timeOut(@Req() req): Promise<any> {
+    const { userId } = req.user;
+    return await this.attendanceService.timeOut(userId);
   }
 }
