@@ -1,5 +1,6 @@
 import { Remarks } from 'src/common/enums/remarkOptions.enum';
 import { ScheduleSubject } from 'src/common/enums/scheduleSubject.enum';
+import { Attendance } from 'src/modules/attendance/entities/attendance.entity';
 import { Room } from 'src/modules/rooms/entities/room.entity';
 import { Subject } from 'src/modules/subjects/entities/subject.entity';
 import { User } from 'src/modules/users/entities/user.entity';
@@ -9,6 +10,7 @@ import {
   JoinTable,
   ManyToMany,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
@@ -38,4 +40,7 @@ export class AssignmentSubject {
 
   @ManyToOne(() => Room, (room) => room.assign)
   room: Room;
+
+  @OneToMany(() => Attendance, (attendance) => attendance.assignment)
+  attendance: Attendance[];
 }
