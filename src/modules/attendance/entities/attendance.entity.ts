@@ -14,6 +14,15 @@ export class Attendance {
   @Column()
   date: string;
 
+  @Column({ type: 'timestamptz', nullable: true })
+  timeIn: Date;
+
+  @Column({ nullable: true })
+  timeOut: Date;
+
+  @Column({ type: 'float', nullable: true })
+  totalHours: number; // total duty hours
+
   @ManyToOne(() => User, (user) => user.attendance)
   user: User;
 
