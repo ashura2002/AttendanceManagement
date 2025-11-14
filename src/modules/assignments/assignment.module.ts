@@ -18,5 +18,6 @@ import { RoomModule } from '../rooms/room.module';
   ],
   controllers: [AssignmentController],
   providers: [AssignmentService],
+  exports: [AssignmentService],
 })
 export class AssignmentModule {}
