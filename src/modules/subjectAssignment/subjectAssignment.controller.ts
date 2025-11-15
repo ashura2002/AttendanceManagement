@@ -41,7 +41,7 @@ export class SubjectAssignmentController {
   @Get('all')
   @HttpCode(HttpStatus.OK)
   @customRoleDecorator(Roles.Employee)
-  async getOwnSubjectAssignments(@Req() req): Promise<any> {
+  async getOwnSubjectAssignments(@Req() req): Promise<SubjectAssignment[]> {
     const { userId } = req.user;
     return await this.subjectAssignmentService.getOwnSubjectAssignments(userId);
   }

@@ -38,7 +38,7 @@ export class subjectAssignmentService {
     return await this.subjectAssignmentRepo.save(subjectsAssign);
   }
 
-  async getOwnSubjectAssignments(userId: number): Promise<any> {
+  async getOwnSubjectAssignments(userId: number): Promise<SubjectAssignment[]> {
     await this.userService.findById(userId);
     const subjectLoads = await this.subjectAssignmentRepo
       .createQueryBuilder('loads')
