@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { SubjectAssignment } from './entities/subjectAssignment.entity';
 import { Repository } from 'typeorm';
@@ -6,6 +10,8 @@ import { AssignSubjectDTO } from './dto/assignSubject.dto';
 import { UsersService } from '../users/users.service';
 import { RoomService } from '../rooms/room.service';
 import { SubjectService } from '../subjects/subject.service';
+import { UpdateSubjectScheduleDTO } from './dto/updateSubjectSchedule.dto';
+import { convertTo24Hour } from 'src/common/helper/timeConverter';
 
 @Injectable()
 export class subjectAssignmentService {
@@ -63,5 +69,32 @@ export class subjectAssignmentService {
       .where('loads.user =:userId', { userId })
       .getMany();
     return subjectLoads;
+  }
+
+  async updateLoadsSchedule(
+    subjectAssignmentID: number,
+    updateLoadsDTO: UpdateSubjectScheduleDTO,
+  ): Promise<SubjectAssignment> {
+    const { startTime, endTime } = updateLoadsDTO;
+    const assignment = await this.subjectAssignmentRepo.findOne({
+      where: { id: subjectAssignmentID },
+    });
+
+    if (!assignment) throw new NotFoundException('Load not found');
+    const updatedLoadsSchedule = {
+      ...updateLoadsDTO,
+      startTime: convertTo24Hour(startTime),
+      endTime: convertTo24Hour(endTime),
+    };
+    Object.assign(assignment, updatedLoadsSchedule);
+    return await this.subjectAssignmentRepo.save(assignment);
+  }
+
+  async deleteLoads(subjectAssignmentID: number): Promise<void> {
+    const assignment = await this.subjectAssignmentRepo.findOne({
+      where: { id: subjectAssignmentID },
+    });
+    if (!assignment) throw new NotFoundException('Loads not found');
+    await this.subjectAssignmentRepo.remove(assignment);
   }
 }
