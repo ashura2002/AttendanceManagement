@@ -118,4 +118,30 @@ export class subjectAssignmentService {
 
     return await assignment.getMany();
   }
+
+  async getAllUserLoadsByAdmin(userId: number): Promise<SubjectAssignment[]> {
+    const assignment = await this.subjectAssignmentRepo
+      .createQueryBuilder('loads')
+      .leftJoin('loads.user', 'user')
+      .leftJoin('loads.subjects', 'subjects')
+      .leftJoin('loads.room', 'room')
+      .leftJoin('room.building', 'building')
+      .select([
+        'loads.id',
+        'loads.remarks',
+        'loads.startTime',
+        'loads.endTime',
+        'loads.days',
+        'subjects.subjectName',
+        'subjects.controlNumber',
+        'subjects.subjectDescription',
+        'subjects.unit',
+        'room.roomName',
+        'building.buildingName',
+        'building.location',
+      ])
+      .where('loads.user =:userId', { userId })
+      .getMany();
+    return assignment;
+  }
 }

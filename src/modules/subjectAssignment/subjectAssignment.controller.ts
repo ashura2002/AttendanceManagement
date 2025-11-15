@@ -67,7 +67,7 @@ export class SubjectAssignmentController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @customRoleDecorator(Roles.Admin, Roles.Hr, Roles.ProgramHead)
+  @HttpCode(HttpStatus.OK)
   async deleteLoads(@Param('id') id: number): Promise<void> {
     return await this.subjectAssignmentService.deleteLoads(id);
   }
@@ -75,8 +75,20 @@ export class SubjectAssignmentController {
   @Get('by-date')
   @HttpCode(HttpStatus.OK)
   @customRoleDecorator(Roles.Employee)
-  async getLoadsByDate(@Req() req, @Query('date') date: Date): Promise<SubjectAssignment[]> {
+  async getLoadsByDate(
+    @Req() req,
+    @Query('date') date: Date,
+  ): Promise<SubjectAssignment[]> {
     const { userId } = req.user;
     return await this.subjectAssignmentService.getLoadsByDate(userId, date);
+  }
+
+  @Get('users-load/:id')
+  @HttpCode(HttpStatus.OK)
+  @HttpCode(HttpStatus.OK)
+  async getAllUserLoadsByAdmin(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<SubjectAssignment[]> {
+    return await this.subjectAssignmentService.getAllUserLoadsByAdmin(id);
   }
 }
