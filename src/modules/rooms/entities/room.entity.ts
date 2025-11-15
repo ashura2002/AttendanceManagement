@@ -1,4 +1,3 @@
-import { AssignmentSubject } from 'src/modules/assignments/entities/assignment.entity';
 import { Building } from 'src/modules/buildings/entities/building.entity';
 import {
   Column,
@@ -19,6 +18,4 @@ export class Room {
   @ManyToOne(() => Building, (building) => building.rooms)
   building: Building;
 
-  @OneToMany(() => AssignmentSubject, (assign) => assign.room)
-  assign: AssignmentSubject;
 }
