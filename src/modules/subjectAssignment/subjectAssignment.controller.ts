@@ -1,9 +1,13 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
+  Param,
+  ParseIntPipe,
+  Patch,
   Post,
   Req,
   UseGuards,
@@ -17,6 +21,7 @@ import { Roles } from 'src/common/enums/Roles.enum';
 import { AssignSubjectDTO } from './dto/assignSubject.dto';
 import { SubjectAssignment } from './entities/subjectAssignment.entity';
 import { SkipThrottle } from '@nestjs/throttler';
+import { UpdateSubjectScheduleDTO } from './dto/updateSubjectSchedule.dto';
 
 @Controller('subject-assignment')
 @ApiBearerAuth('access-token')
@@ -38,7 +43,7 @@ export class SubjectAssignmentController {
     );
   }
 
-  @Get('all')
+  @Get('all-own')
   @HttpCode(HttpStatus.OK)
   @customRoleDecorator(Roles.Employee)
   async getOwnSubjectAssignments(@Req() req): Promise<SubjectAssignment[]> {
@@ -46,5 +51,24 @@ export class SubjectAssignmentController {
     return await this.subjectAssignmentService.getOwnSubjectAssignments(userId);
   }
 
-  // get by date
+  @Patch(':id')
+  @HttpCode(HttpStatus.OK)
+  @customRoleDecorator(Roles.Admin, Roles.Hr, Roles.ProgramHead)
+  async updateLoadsSchedule(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateLoadsDTO: UpdateSubjectScheduleDTO,
+  ): Promise<SubjectAssignment> {
+    return await this.subjectAssignmentService.updateLoadsSchedule(
+      id,
+      updateLoadsDTO,
+    );
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @customRoleDecorator(Roles.Admin, Roles.Hr, Roles.ProgramHead)
+  async deleteLoads(@Param('id') id: number): Promise<void> {
+    return await this.subjectAssignmentService.deleteLoads(id);
+  }
+  // get by assignment by date
 }
