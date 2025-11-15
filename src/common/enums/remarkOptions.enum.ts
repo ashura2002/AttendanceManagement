@@ -5,4 +5,6 @@ export enum Remarks {
   LeftEarly = 'Left Early',
   OnLeave = 'On Leave',
   Overtime = 'Overtime',
+  NoClockInRecord = 'No Time In Record',
+  UpComming = 'Up Coming',
 }
