@@ -6,6 +6,7 @@ import { Attendance } from './entities/attendance.entity';
 import { JwtModule } from '@nestjs/jwt';
 import { UsersModule } from '../users/users.module';
 import { AssignmentModule } from '../assignments/assignment.module';
+import { LeaveRequestModule } from '../leave-request/leave-request.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { AssignmentModule } from '../assignments/assignment.module';
     JwtModule,
     UsersModule,
     AssignmentModule,
+    LeaveRequestModule,
   ],
   controllers: [AttendanceController],
   providers: [AttendanceService],

@@ -16,5 +16,6 @@ import { NotificationModule } from '../notification/notification.module';
   ],
   controllers: [LeaveRequestController],
   providers: [LeaveRequestService],
+  exports: [LeaveRequestService],
 })
 export class LeaveRequestModule {}

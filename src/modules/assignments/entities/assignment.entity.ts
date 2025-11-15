@@ -28,9 +28,6 @@ export class AssignmentSubject {
   @Column()
   endTime: string;
 
-  @Column({ default: Remarks.Present })
-  remarks: Remarks;
-
   @ManyToOne(() => User, (user) => user.subjectAssignments)
   user: User;
 
