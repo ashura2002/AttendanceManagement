@@ -3,7 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Repository } from 'typeorm';
+import { LessThanOrEqual, MoreThanOrEqual, Repository } from 'typeorm';
 import { Request } from './entities/request.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateLeaveRequestDTO } from './dto/create-request.dto';

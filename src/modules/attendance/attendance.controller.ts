@@ -1,4 +1,4 @@
-import { Controller, Post, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { RoleGuard } from 'src/common/guards/role.guard';
@@ -20,5 +20,11 @@ export class AttendanceController {
   async timeOut(@Req() req): Promise<any> {
     const { userId } = req.user;
     return await this.attendanceService.timeOut(userId);
+  }
+
+  @Get('own-attendance')
+  async getOwnAttendanceLog(@Req() req): Promise<any> {
+    const { userId } = req.user;
+    return await this.attendanceService.getOwnAttendance(userId)
   }
 }

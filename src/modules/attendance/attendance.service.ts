@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import { UsersService } from '../users/users.service';
 import { AssignmentService } from '../assignments/assignment.service';
 import { Remarks } from 'src/common/enums/remarkOptions.enum';
+import { LeaveRequestService } from '../leave-request/leave-request.service';
 
 @Injectable()
 export class AttendanceService {
@@ -13,6 +14,7 @@ export class AttendanceService {
     private readonly attendanceRepo: Repository<Attendance>,
     private readonly userService: UsersService,
     private readonly subjectAssignmentService: AssignmentService,
+    private readonly leaveService: LeaveRequestService,
   ) {}
   async timeIn(userId: number): Promise<any> {
     const employee = await this.userService.findById(userId);
@@ -137,6 +139,26 @@ export class AttendanceService {
       timeOut: attendance.timeOut,
       totalHours: attendance.totalHours,
     };
+  }
+
+  async getOwnAttendance(userId: number): Promise<any> {
+    const attendance = this.attendanceRepo
+      .createQueryBuilder('attendance')
+      .leftJoin('attendance.user', 'user')
+      .select([
+        'attendance.id',
+        'attendance.date',
+        'attendance.timeIn',
+        'attendance.timeOut',
+        'attendance.status',
+        'attendance.totalHours',
+        'user.id',
+        'user.displayName',
+        'user.email',
+      ])
+      .where('attendance.user =:userId', { userId })
+      .getMany();
+    return attendance;
   }
 
   // helper fnction convert hours   to date object
