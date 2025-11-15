@@ -9,6 +9,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -70,5 +71,12 @@ export class SubjectAssignmentController {
   async deleteLoads(@Param('id') id: number): Promise<void> {
     return await this.subjectAssignmentService.deleteLoads(id);
   }
-  // get by assignment by date
+
+  @Get('by-date')
+  @HttpCode(HttpStatus.OK)
+  @customRoleDecorator(Roles.Employee)
+  async getLoadsByDate(@Req() req, @Query('date') date: Date): Promise<SubjectAssignment[]> {
+    const { userId } = req.user;
+    return await this.subjectAssignmentService.getLoadsByDate(userId, date);
+  }
 }
