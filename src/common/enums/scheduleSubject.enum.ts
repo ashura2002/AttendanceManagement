@@ -1,4 +1,4 @@
-export enum ScheduleSubject {
+export enum SubjectDays {
   Mon = 'Monday',
   Tue = 'Tuesday',
   Wed = 'Wednesday',

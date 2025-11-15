@@ -14,6 +14,7 @@ import { BuildingModule } from './modules/buildings/buildings.module';
 import { RoomModule } from './modules/rooms/room.module';
 import { ProfileModule } from './modules/profiles/profile.module';
 import { SubjectModule } from './modules/subjects/subject.module';
+import { SubjectAssignmentModule } from './modules/subjectAssignment/subjectAssignment.module';
 
 @Module({
   imports: [
@@ -51,6 +52,7 @@ import { SubjectModule } from './modules/subjects/subject.module';
     RoomModule,
     ProfileModule,
     SubjectModule,
+    SubjectAssignmentModule,
   ],
   controllers: [AppController],
   providers: [
