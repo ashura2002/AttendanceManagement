@@ -12,6 +12,8 @@ import { RoomService } from '../rooms/room.service';
 import { SubjectService } from '../subjects/subject.service';
 import { UpdateSubjectScheduleDTO } from './dto/updateSubjectSchedule.dto';
 import { convertTo24Hour } from 'src/common/helper/timeConverter';
+import { SubjectDays } from 'src/common/enums/scheduleSubject.enum';
+import { getDayOnDate } from 'src/common/helper/dateConverter';
 
 @Injectable()
 export class subjectAssignmentService {
@@ -96,5 +98,24 @@ export class subjectAssignmentService {
     });
     if (!assignment) throw new NotFoundException('Loads not found');
     await this.subjectAssignmentRepo.remove(assignment);
+  }
+
+  async getLoadsByDate(
+    userId: number,
+    date: Date,
+  ): Promise<SubjectAssignment[]> {
+    const convertedDate = new Date(date);
+    const dayName = getDayOnDate(convertedDate);
+
+    if (!dayName) return [];
+
+    const assignment = this.subjectAssignmentRepo
+      .createQueryBuilder('loads')
+      .leftJoinAndSelect('loads.subjects', 'subjects')
+      .leftJoinAndSelect('loads.room', 'room')
+      .where('loads.user =:userId', { userId })
+      .andWhere(':dayName = ANY(loads.days)', { dayName });
+
+    return await assignment.getMany();
   }
 }
