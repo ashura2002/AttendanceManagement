@@ -1,5 +1,5 @@
-import { AssignmentSubject } from 'src/modules/assignments/entities/assignment.entity';
-import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { SubjectAssignment } from 'src/modules/subjectAssignment/entities/subjectAssignment.entity';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class Subject {
@@ -18,6 +18,6 @@ export class Subject {
   @Column()
   unit: number;
 
-  @ManyToMany(() => AssignmentSubject, (assign) => assign.subjects)
-  assignments: AssignmentSubject[];
+  @OneToMany(() => SubjectAssignment, (subAssign) => subAssign.subjects)
+  subjectAssignment: SubjectAssignment[];
 }
