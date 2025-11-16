@@ -14,6 +14,7 @@ import { UpdateSubjectScheduleDTO } from './dto/updateSubjectSchedule.dto';
 import { convertTo24Hour } from 'src/common/helper/timeConverter';
 import { getDayOnDate } from 'src/common/helper/dateConverter';
 import { LeaveRequestService } from '../leave-request/leave-request.service';
+import { Remarks } from 'src/common/enums/remarkOptions.enum';
 
 @Injectable()
 export class subjectAssignmentService {
@@ -121,8 +122,23 @@ export class subjectAssignmentService {
   }
 
   async getAllUserLoadsByAdmin(userId: number): Promise<SubjectAssignment[]> {
+    const now = new Date();
     // add on leave on subject remark if user is on leave
     const onLeaveUser = await this.leaveService.findOnLeaveEmployee(userId);
+    const validRequest = onLeaveUser.find((r) => new Date(r.endDate) > now);
+    if (validRequest) {
+      console.log('still on leave');
+      // update remark if the user is currently on leave
+      await this.subjectAssignmentRepo.update(
+        { user: { id: userId } },
+        { remarks: Remarks.OnLeave },
+      );
+    } else {
+      await this.subjectAssignmentRepo.update(
+        { user: { id: userId } },
+        { remarks: Remarks.NoClockInRecord },
+      );
+    }
 
     const assignment = await this.subjectAssignmentRepo
       .createQueryBuilder('loads')
