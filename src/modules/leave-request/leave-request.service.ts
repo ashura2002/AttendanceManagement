@@ -249,7 +249,7 @@ export class LeaveRequestService {
     return approvedRequest;
   }
 
-  async getAllRejectedRequest(): Promise<any> {
+  async getAllRejectedRequest(): Promise<Request[]> {
     const rejectedRequest = await this.leaveReqRepo.find({
       where: { finalStatus: ResultStatus.Rejected },
     });
