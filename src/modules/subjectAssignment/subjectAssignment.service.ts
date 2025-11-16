@@ -12,8 +12,8 @@ import { RoomService } from '../rooms/room.service';
 import { SubjectService } from '../subjects/subject.service';
 import { UpdateSubjectScheduleDTO } from './dto/updateSubjectSchedule.dto';
 import { convertTo24Hour } from 'src/common/helper/timeConverter';
-import { SubjectDays } from 'src/common/enums/scheduleSubject.enum';
 import { getDayOnDate } from 'src/common/helper/dateConverter';
+import { LeaveRequestService } from '../leave-request/leave-request.service';
 
 @Injectable()
 export class subjectAssignmentService {
@@ -23,6 +23,7 @@ export class subjectAssignmentService {
     private readonly userService: UsersService,
     private readonly roomService: RoomService,
     private readonly subjectService: SubjectService,
+    private readonly leaveService: LeaveRequestService,
   ) {}
 
   async assignSubject(
@@ -120,6 +121,9 @@ export class subjectAssignmentService {
   }
 
   async getAllUserLoadsByAdmin(userId: number): Promise<SubjectAssignment[]> {
+    // add on leave on subject remark if user is on leave
+    const onLeaveUser = await this.leaveService.findOnLeaveEmployee(userId);
+
     const assignment = await this.subjectAssignmentRepo
       .createQueryBuilder('loads')
       .leftJoin('loads.user', 'user')

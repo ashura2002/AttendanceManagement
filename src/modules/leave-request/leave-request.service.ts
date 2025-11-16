@@ -255,4 +255,16 @@ export class LeaveRequestService {
     });
     return rejectedRequest;
   }
+
+  async findOnLeaveEmployee(userId: number): Promise<any> {
+    const onLeaveUsers = await this.leaveReqRepo
+      .createQueryBuilder('leave')
+      .leftJoin('leave.user', 'user')
+      .where('leave.user =:userId', { userId })
+      .andWhere('leave.finalStatus =:finalStatus', {
+        finalStatus: ResultStatus.Approved,
+      })
+      .getMany();
+    return onLeaveUsers;
+  }
 }
