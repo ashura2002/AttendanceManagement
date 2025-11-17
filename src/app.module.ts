@@ -15,6 +15,7 @@ import { RoomModule } from './modules/rooms/room.module';
 import { ProfileModule } from './modules/profiles/profile.module';
 import { SubjectModule } from './modules/subjects/subject.module';
 import { SubjectAssignmentModule } from './modules/subjectAssignment/subjectAssignment.module';
+import { AttendanceModule } from './modules/attendance/attendance.module';
 
 @Module({
   imports: [
@@ -53,6 +54,7 @@ import { SubjectAssignmentModule } from './modules/subjectAssignment/subjectAssi
     ProfileModule,
     SubjectModule,
     SubjectAssignmentModule,
+    AttendanceModule,
   ],
   controllers: [AppController],
   providers: [
