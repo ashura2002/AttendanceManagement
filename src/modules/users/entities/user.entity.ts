@@ -17,6 +17,7 @@ import { Notification } from 'src/modules/notification/entities/notification.ent
 import { Request } from 'src/modules/leave-request/entities/request.entity';
 import { Profile } from 'src/modules/profiles/entities/profile.entity';
 import { SubjectAssignment } from 'src/modules/subjectAssignment/entities/subjectAssignment.entity';
+import { Attendance } from 'src/modules/attendance/entities/attendance.entity';
 
 @Entity()
 export class User {
@@ -70,4 +71,7 @@ export class User {
 
   @OneToMany(() => SubjectAssignment, (subAssignment) => subAssignment.user)
   subjectAssignment: SubjectAssignment[];
+
+  @OneToMany(() => Attendance, (attendance) => attendance.user)
+  attendances: Attendance[];
 }
