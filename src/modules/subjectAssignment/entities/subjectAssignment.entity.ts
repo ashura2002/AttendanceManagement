@@ -1,9 +1,16 @@
 import { Remarks } from 'src/common/enums/remarkOptions.enum';
 import { SubjectDays } from 'src/common/enums/scheduleSubject.enum';
+import { Attendance } from 'src/modules/attendance/entities/attendance.entity';
 import { Room } from 'src/modules/rooms/entities/room.entity';
 import { Subject } from 'src/modules/subjects/entities/subject.entity';
 import { User } from 'src/modules/users/entities/user.entity';
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity()
 export class SubjectAssignment {
@@ -30,4 +37,7 @@ export class SubjectAssignment {
 
   @ManyToOne(() => User, (user) => user.subjectAssignment)
   user: User;
+
+  @OneToMany(() => Attendance, (attendnce) => attendnce.subjectAssignment)
+  attendances: Attendance[];
 }
