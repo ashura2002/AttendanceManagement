@@ -164,4 +164,12 @@ export class subjectAssignmentService {
       .getMany();
     return assignment;
   }
+
+  async findSubjectAssignmentById(userId: number) {
+    const assignment = await this.subjectAssignmentRepo
+      .createQueryBuilder('assignment')
+      .where('assignment.user =:userId', { userId })
+      .getOne();
+    return assignment;
+  }
 }
