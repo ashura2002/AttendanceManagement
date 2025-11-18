@@ -24,7 +24,7 @@ export class subjectAssignmentService {
     private readonly roomService: RoomService,
     private readonly subjectService: SubjectService,
     private readonly leaveService: LeaveRequestService,
-  ) { }
+  ) {}
 
   async assignSubject(
     subjectAssignmentDTO: AssignSubjectDTO,
@@ -41,7 +41,9 @@ export class subjectAssignmentService {
     const convertedEnd = this.convertTo24Hour(endTime);
 
     if (convertedStart >= convertedEnd) {
-      throw new BadRequestException('Start time must be earlier than end time.');
+      throw new BadRequestException(
+        'Start time must be earlier than end time.',
+      );
     }
 
     // 4. Check if schedule overlaps for same user and same days
@@ -49,13 +51,10 @@ export class subjectAssignmentService {
       .createQueryBuilder('assign')
       .where('assign.user = :userId', { userId })
       .andWhere('assign.days && :days', { days }) // array overlap operator
-      .andWhere(
-        'assign.startTime < :endTime AND assign.endTime > :startTime',
-        {
-          startTime: convertedStart,
-          endTime: convertedEnd,
-        },
-      )
+      .andWhere('assign.startTime < :endTime AND assign.endTime > :startTime', {
+        startTime: convertedStart,
+        endTime: convertedEnd,
+      })
       .getOne();
 
     if (conflict) {
@@ -86,12 +85,9 @@ export class subjectAssignmentService {
       .leftJoin('loads.user', 'user')
       .select([
         'loads.id',
-        'loads.remarks',
         'loads.startTime',
         'loads.endTime',
         'loads.days',
-        'loads.timeIn',
-        'loads.timeOut',
         'subjects.subjectName',
         'subjects.controlNumber',
         'subjects.subjectDescription',
@@ -160,7 +156,6 @@ export class subjectAssignmentService {
       .leftJoin('room.building', 'building')
       .select([
         'loads.id',
-        'loads.remarks',
         'loads.startTime',
         'loads.endTime',
         'loads.days',

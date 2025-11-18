@@ -153,4 +153,8 @@ export class UsersService {
     if (!user) throw new NotFoundException('User not found');
     return user;
   }
+
+  async saveUser(user: User): Promise<User> {
+    return await this.userRepo.save(user);
+  }
 }
