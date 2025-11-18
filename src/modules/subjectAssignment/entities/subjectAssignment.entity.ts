@@ -1,6 +1,6 @@
 import { Remarks } from 'src/common/enums/remarkOptions.enum';
 import { SubjectDays } from 'src/common/enums/scheduleSubject.enum';
-import { Attendance } from 'src/modules/attendance/entities/attendance.entity';
+import { Attendance } from 'src/modules/attendances/entities/attendance.entity';
 import { Room } from 'src/modules/rooms/entities/room.entity';
 import { Subject } from 'src/modules/subjects/entities/subject.entity';
 import { User } from 'src/modules/users/entities/user.entity';
@@ -23,9 +23,6 @@ export class SubjectAssignment {
   @Column({ type: 'time' })
   endTime: string;
 
-  @Column({ type: 'enum', enum: Remarks, default: Remarks.NoClockInRecord })
-  remarks: Remarks;
-
   @Column({ type: 'enum', enum: SubjectDays, array: true })
   days: SubjectDays[];
 
@@ -38,6 +35,6 @@ export class SubjectAssignment {
   @ManyToOne(() => User, (user) => user.subjectAssignment)
   user: User;
 
-  @OneToMany(() => Attendance, (attendnce) => attendnce.subjectAssignment)
-  attendances: Attendance[];
+  @OneToMany(() => Attendance, (attendance) => attendance.assignment)
+  attendance: Attendance
 }

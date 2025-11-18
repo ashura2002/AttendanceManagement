@@ -7,4 +7,5 @@ export enum Remarks {
   Overtime = 'Overtime',
   NoClockInRecord = 'No Time In Record',
   UpComming = 'Up Coming',
+  Early = 'Too early'
 }

@@ -14,7 +14,6 @@ import { UpdateSubjectScheduleDTO } from './dto/updateSubjectSchedule.dto';
 import { convertTo24Hour } from 'src/common/helper/timeConverter';
 import { getDayOnDate } from 'src/common/helper/dateConverter';
 import { LeaveRequestService } from '../leave-request/leave-request.service';
-import { Remarks } from 'src/common/enums/remarkOptions.enum';
 
 @Injectable()
 export class subjectAssignmentService {
@@ -25,27 +24,56 @@ export class subjectAssignmentService {
     private readonly roomService: RoomService,
     private readonly subjectService: SubjectService,
     private readonly leaveService: LeaveRequestService,
-  ) {}
+  ) { }
 
   async assignSubject(
     subjectAssignmentDTO: AssignSubjectDTO,
   ): Promise<SubjectAssignment> {
-    const { userId, roomId, subjectId, startTime, endTime } =
+    const { userId, roomId, subjectId, startTime, endTime, days } =
       subjectAssignmentDTO;
+
     const user = await this.userService.findById(userId);
-    const rooms = await this.roomService.getRoomById(roomId);
-    const subjects = await this.subjectService.getSubjectById(subjectId);
+    const room = await this.roomService.getRoomById(roomId);
+    const subject = await this.subjectService.getSubjectById(subjectId);
 
-    if (startTime > endTime)
-      throw new BadRequestException('Start time must be lower than endtime');
+    // Convert AM/PM 24-hour time
+    const convertedStart = this.convertTo24Hour(startTime);
+    const convertedEnd = this.convertTo24Hour(endTime);
 
-    const subjectsAssign = this.subjectAssignmentRepo.create({
-      ...subjectAssignmentDTO,
-      user: user,
-      room: rooms,
-      subjects: subjects,
+    if (convertedStart >= convertedEnd) {
+      throw new BadRequestException('Start time must be earlier than end time.');
+    }
+
+    // 4. Check if schedule overlaps for same user and same days
+    const conflict = await this.subjectAssignmentRepo
+      .createQueryBuilder('assign')
+      .where('assign.user = :userId', { userId })
+      .andWhere('assign.days && :days', { days }) // array overlap operator
+      .andWhere(
+        'assign.startTime < :endTime AND assign.endTime > :startTime',
+        {
+          startTime: convertedStart,
+          endTime: convertedEnd,
+        },
+      )
+      .getOne();
+
+    if (conflict) {
+      throw new BadRequestException(
+        `Schedule conflict detected: user already has a subject during this time.`,
+      );
+    }
+
+    const newAssignment = this.subjectAssignmentRepo.create({
+      startTime: convertedStart,
+      endTime: convertedEnd,
+      days,
+      user,
+      room,
+      subjects: subject,
     });
-    return await this.subjectAssignmentRepo.save(subjectsAssign);
+
+    return await this.subjectAssignmentRepo.save(newAssignment);
   }
 
   async getOwnSubjectAssignments(userId: number): Promise<SubjectAssignment[]> {
@@ -62,6 +90,8 @@ export class subjectAssignmentService {
         'loads.startTime',
         'loads.endTime',
         'loads.days',
+        'loads.timeIn',
+        'loads.timeOut',
         'subjects.subjectName',
         'subjects.controlNumber',
         'subjects.subjectDescription',
@@ -122,24 +152,6 @@ export class subjectAssignmentService {
   }
 
   async getAllUserLoadsByAdmin(userId: number): Promise<SubjectAssignment[]> {
-    const now = new Date();
-    // add on leave on subject remark if user is on leave
-    const onLeaveUser = await this.leaveService.findOnLeaveEmployee(userId);
-    const validRequest = onLeaveUser.find((r) => new Date(r.endDate) > now);
-    if (validRequest) {
-      console.log('still on leave');
-      // update remark if the user is currently on leave
-      await this.subjectAssignmentRepo.update(
-        { user: { id: userId } },
-        { remarks: Remarks.OnLeave },
-      );
-    } else {
-      await this.subjectAssignmentRepo.update(
-        { user: { id: userId } },
-        { remarks: Remarks.NoClockInRecord },
-      );
-    }
-
     const assignment = await this.subjectAssignmentRepo
       .createQueryBuilder('loads')
       .leftJoin('loads.user', 'user')
@@ -171,5 +183,26 @@ export class subjectAssignmentService {
       .where('assignment.user =:userId', { userId })
       .getOne();
     return assignment;
+  }
+
+  private convertTo24Hour(time: string): string {
+    // Normalize input: ensure space before AM/PM
+    const match = time.match(/(\d{1,2}:\d{2})\s?(AM|PM)/i);
+    if (!match) {
+      throw new BadRequestException(
+        `Invalid time format. Expected hh:mm AM/PM, got: ${time}`,
+      );
+    }
+
+    const timePart = match[1]; // "08:30"
+    const modifier = match[2].toUpperCase(); // "AM" or "PM"
+
+    let [hours, minutes] = timePart.split(':');
+    let hourNum = parseInt(hours, 10);
+
+    if (modifier === 'PM' && hourNum !== 12) hourNum += 12;
+    if (modifier === 'AM' && hourNum === 12) hourNum = 0;
+
+    return `${hourNum.toString().padStart(2, '0')}:${minutes}:00`;
   }
 }
