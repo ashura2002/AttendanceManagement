@@ -3,7 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { LessThanOrEqual, MoreThanOrEqual, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Request } from './entities/request.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateLeaveRequestDTO } from './dto/create-request.dto';
@@ -21,7 +21,7 @@ export class LeaveRequestService {
     private readonly leaveReqRepo: Repository<Request>,
     private readonly userService: UsersService,
     private readonly notificationService: NotificationService,
-  ) { }
+  ) {}
 
   async createLeaveForm(
     userId: number,
@@ -29,6 +29,11 @@ export class LeaveRequestService {
   ): Promise<Request> {
     const { startDate, endDate, leaveType } = dto;
     const user = await this.userService.findById(userId);
+
+    if (user.leaveCredits <= 0)
+      throw new BadRequestException(
+        'You have 0 leave credits remaining. You cannot request a leave.',
+      );
 
     // check if start and end date is valid
     if (new Date(endDate) < new Date(startDate))
@@ -42,7 +47,7 @@ export class LeaveRequestService {
     // for total days employees leave
     const totalDayLeave =
       (new Date(endDate).getTime() - new Date(startDate).getTime()) /
-      (1000 * 60 * 60 * 24) +
+        (1000 * 60 * 60 * 24) +
       1;
 
     // create request form
@@ -216,6 +221,12 @@ export class LeaveRequestService {
         request.finalStatus = ResultStatus.Approved;
         request.views = LeaveStatus.Approved_Request;
         request.admin = ResultStatus.Approved;
+
+        // deduct the users leave credit if request was fully approved
+        const user = await this.userService.findById(employee.id);
+        user.leaveCredits -= 1;
+        await this.userService.saveUser(user);
+
         await notify(
           `Your request was fully approved by ${Roles.Admin}`,
           employee.id,
@@ -254,39 +265,5 @@ export class LeaveRequestService {
       where: { finalStatus: ResultStatus.Rejected },
     });
     return rejectedRequest;
-  }
-
-  async findOnLeaveEmployee(userId: number): Promise<any> {
-    const onLeaveUsers = await this.leaveReqRepo
-      .createQueryBuilder('leave')
-      .leftJoin('leave.user', 'user')
-      .where('leave.user =:userId', { userId })
-      .andWhere('leave.finalStatus =:finalStatus', {
-        finalStatus: ResultStatus.Approved,
-      })
-      .getMany();
-    return onLeaveUsers;
-  }
-
-  async updateRemarksIfOnLeave(userId: number, date: Date): Promise<any> {
-    const selectedDate = new Date(date)
-
-    // check if the user is on leave within the selected date
-    const leave = await this.leaveReqRepo.findOne({
-      where: {
-        user: { id: userId },
-        finalStatus: ResultStatus.Approved,
-        startDate: LessThanOrEqual(selectedDate),
-        endDate: MoreThanOrEqual(selectedDate)
-      }, relations: ['user']
-    })
-
-    if (!leave) return; // user is not on leave this day → no update
-
-    // get list of loads for this date
- 
-
-    // update remarks to OnLeave
-   
   }
 }

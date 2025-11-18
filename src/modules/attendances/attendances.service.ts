@@ -164,6 +164,6 @@ export class AttendancesService {
   }
 }
 // TODO ->
-// add time out
-// add on leave if user is on leave with in that day
-// add leave credits for every employee
+// add time out -> DONE
+// add leave credits for every employee -> DONE
+// add on leave if user is on leave with in that day 

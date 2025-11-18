@@ -73,5 +73,8 @@ export class User {
   subjectAssignment: SubjectAssignment[];
 
   @OneToMany(() => Attendance, (attendance) => attendance.user)
-  attendance: Attendance[]
+  attendance: Attendance[];
+
+  @Column({ type: 'int', default: 160 })
+  leaveCredits: number;
 }
