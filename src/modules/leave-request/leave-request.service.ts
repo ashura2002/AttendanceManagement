@@ -21,7 +21,7 @@ export class LeaveRequestService {
     private readonly leaveReqRepo: Repository<Request>,
     private readonly userService: UsersService,
     private readonly notificationService: NotificationService,
-  ) {}
+  ) { }
 
   async createLeaveForm(
     userId: number,
@@ -42,7 +42,7 @@ export class LeaveRequestService {
     // for total days employees leave
     const totalDayLeave =
       (new Date(endDate).getTime() - new Date(startDate).getTime()) /
-        (1000 * 60 * 60 * 24) +
+      (1000 * 60 * 60 * 24) +
       1;
 
     // create request form
@@ -266,5 +266,27 @@ export class LeaveRequestService {
       })
       .getMany();
     return onLeaveUsers;
+  }
+
+  async updateRemarksIfOnLeave(userId: number, date: Date): Promise<any> {
+    const selectedDate = new Date(date)
+
+    // check if the user is on leave within the selected date
+    const leave = await this.leaveReqRepo.findOne({
+      where: {
+        user: { id: userId },
+        finalStatus: ResultStatus.Approved,
+        startDate: LessThanOrEqual(selectedDate),
+        endDate: MoreThanOrEqual(selectedDate)
+      }, relations: ['user']
+    })
+
+    if (!leave) return; // user is not on leave this day → no update
+
+    // get list of loads for this date
+ 
+
+    // update remarks to OnLeave
+   
   }
 }
