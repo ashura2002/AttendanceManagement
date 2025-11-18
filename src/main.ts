@@ -34,7 +34,7 @@ async function bootstrap() {
       'access-token',
     )
     .setTitle('Attendance Management - Personal Project')
-    .setDescription('Capstone Clonning')
+    .setDescription('JMARK DAYNA')
     .setVersion('1.0')
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
