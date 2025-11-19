@@ -16,3 +16,12 @@ export function convertTo24Hour(time: string): string {
     .toString()
     .padStart(2, '0')}:00`;
 }
+
+
+export function formatTime(time: string): string {
+  if (!time) return 'N/A';
+  return new Date(`1970-01-01T${time}`).toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
