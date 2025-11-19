@@ -1,4 +1,3 @@
-import { Remarks } from 'src/common/enums/remarkOptions.enum';
 import { SubjectDays } from 'src/common/enums/scheduleSubject.enum';
 import { Attendance } from 'src/modules/attendance/entities/attendance.entity';
 import { Room } from 'src/modules/rooms/entities/room.entity';
@@ -31,13 +30,9 @@ export class SubjectAssignment {
   @Column({ type: 'enum', enum: SubjectDays, array: true })
   days: SubjectDays[];
 
-  @Column({ type: 'enum', enum: Remarks, default: Remarks.Schedule })
-  remarks: Remarks;
-
   @ManyToOne(() => User, (user) => user.subjectAssignment)
   user: User;
 
- 
-  @ManyToOne(() => Attendance, (attendance) => attendance.assignment)
-  attendance: Attendance;
+  @OneToMany(() => Attendance, (attendance) => attendance.subjectAssignment)
+  attendance: Attendance[];
 }
