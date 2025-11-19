@@ -266,4 +266,22 @@ export class LeaveRequestService {
     });
     return rejectedRequest;
   }
+
+  async findOnLeaveEmployee(userId: number, date: string): Promise<any> {
+    const targetDate = new Date(date);
+
+    const onLeaveUsers = await this.leaveReqRepo
+      .createQueryBuilder('leave')
+      .leftJoin('leave.user', 'user')
+      .where('leave.user = :userId', { userId })
+      .andWhere('leave.finalStatus = :status', {
+        status: ResultStatus.Approved,
+      })
+      .andWhere(':date BETWEEN leave.startDate AND leave.endDate', {
+        date: targetDate,
+      })
+      .getMany();
+
+    return onLeaveUsers;
+  }
 }
