@@ -4,16 +4,15 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { SubjectAssignment } from './entities/subjectAssignment.entity';
 import { Repository } from 'typeorm';
-import { AssignSubjectDTO } from './dto/assignSubject.dto';
 import { UsersService } from '../users/users.service';
 import { RoomService } from '../rooms/room.service';
 import { SubjectService } from '../subjects/subject.service';
-import { UpdateSubjectScheduleDTO } from './dto/updateSubjectSchedule.dto';
 import { convertTo24Hour } from 'src/common/helper/timeConverter';
+import { AssignSubjectDTO } from './dto/AssignSubject.dto';
+import { SubjectAssignment } from './entities/subject-assignment.entity';
+import { UpdateSubjectScheduleDTO } from './dto/UpdateSubjectSchedule.dto';
 import { getDayOnDate } from 'src/common/helper/dateConverter';
-import { LeaveRequestService } from '../leave-request/leave-request.service';
 
 @Injectable()
 export class subjectAssignmentService {
@@ -23,7 +22,6 @@ export class subjectAssignmentService {
     private readonly userService: UsersService,
     private readonly roomService: RoomService,
     private readonly subjectService: SubjectService,
-    private readonly leaveService: LeaveRequestService,
   ) {}
 
   async assignSubject(
@@ -49,7 +47,7 @@ export class subjectAssignmentService {
     // 4. Check if schedule overlaps for same user and same days
     const conflict = await this.subjectAssignmentRepo
       .createQueryBuilder('assign')
-      .where('assign.user = :userId', { userId })
+      .where('assign.userId = :userId', { userId })
       .andWhere('assign.days && :days', { days }) // array overlap operator
       .andWhere('assign.startTime < :endTime AND assign.endTime > :startTime', {
         startTime: convertedStart,
@@ -63,42 +61,13 @@ export class subjectAssignmentService {
       );
     }
 
-    const newAssignment = this.subjectAssignmentRepo.create({
-      startTime: convertedStart,
-      endTime: convertedEnd,
-      days,
-      user,
-      room,
-      subjects: subject,
+    const assignment = this.subjectAssignmentRepo.create({
+      ...subjectAssignmentDTO,
+      subject: subject,
+      user: user,
+      room: room,
     });
-
-    return await this.subjectAssignmentRepo.save(newAssignment);
-  }
-
-  async getOwnSubjectAssignments(userId: number): Promise<SubjectAssignment[]> {
-    await this.userService.findById(userId);
-    const subjectLoads = await this.subjectAssignmentRepo
-      .createQueryBuilder('loads')
-      .leftJoin('loads.subjects', 'subjects')
-      .leftJoin('loads.room', 'room')
-      .leftJoin('room.building', 'building')
-      .leftJoin('loads.user', 'user')
-      .select([
-        'loads.id',
-        'loads.startTime',
-        'loads.endTime',
-        'loads.days',
-        'subjects.subjectName',
-        'subjects.controlNumber',
-        'subjects.subjectDescription',
-        'subjects.unit',
-        'room.roomName',
-        'building.buildingName',
-        'building.location',
-      ])
-      .where('loads.user =:userId', { userId })
-      .getMany();
-    return subjectLoads;
+    return await this.subjectAssignmentRepo.save(assignment);
   }
 
   async updateLoadsSchedule(
@@ -128,55 +97,46 @@ export class subjectAssignmentService {
     await this.subjectAssignmentRepo.remove(assignment);
   }
 
-  async getLoadsByDate(
+  async getOwnSubjectAssignmentByDate(
     userId: number,
     date: Date,
-  ): Promise<SubjectAssignment[]> {
+  ): Promise<any> {
     const convertedDate = new Date(date);
     const dayName = getDayOnDate(convertedDate);
+    await this.userService.findById(userId);
 
     if (!dayName) return [];
 
-    const assignment = this.subjectAssignmentRepo
-      .createQueryBuilder('loads')
-      .leftJoinAndSelect('loads.subjects', 'subjects')
-      .leftJoinAndSelect('loads.room', 'room')
-      .where('loads.user =:userId', { userId })
-      .andWhere(':dayName = ANY(loads.days)', { dayName });
+    // pang debug
+    // console.log('Received date:', date);
+    // console.log('Converted date:', convertedDate);
+    // console.log('Day name:', dayName);
 
-    return await assignment.getMany();
-  }
-
-  async getAllUserLoadsByAdmin(userId: number): Promise<SubjectAssignment[]> {
     const assignment = await this.subjectAssignmentRepo
-      .createQueryBuilder('loads')
-      .leftJoin('loads.user', 'user')
-      .leftJoin('loads.subjects', 'subjects')
-      .leftJoin('loads.room', 'room')
+      .createQueryBuilder('assignment')
+      .leftJoin('assignment.attendance', 'attendance')
+      .leftJoin('assignment.subject', 'subject')
+      .leftJoin('assignment.room', 'room')
       .leftJoin('room.building', 'building')
       .select([
-        'loads.id',
-        'loads.startTime',
-        'loads.endTime',
-        'loads.days',
-        'subjects.subjectName',
-        'subjects.controlNumber',
-        'subjects.subjectDescription',
-        'subjects.unit',
+        'assignment.id',
+        'assignment.startTime',
+        'assignment.endTime',
+        'assignment.remarks',
+        'assignment.days',
+        'subject.subjectName',
+        'subject.unit',
+        'subject.controlNumber',
+        'subject.subjectDescription',
         'room.roomName',
         'building.buildingName',
         'building.location',
+        'attendance',
       ])
-      .where('loads.user =:userId', { userId })
-      .getMany();
-    return assignment;
-  }
-
-  async findSubjectAssignmentById(userId: number) {
-    const assignment = await this.subjectAssignmentRepo
-      .createQueryBuilder('assignment')
       .where('assignment.user =:userId', { userId })
-      .getOne();
+      .andWhere(':dayName = ANY(assignment.days)', { dayName })
+      .getMany();
+
     return assignment;
   }
 

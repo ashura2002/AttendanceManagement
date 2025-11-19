@@ -1,5 +1,5 @@
 import { Building } from 'src/modules/buildings/entities/building.entity';
-import { SubjectAssignment } from 'src/modules/subjectAssignment/entities/subjectAssignment.entity';
+import { SubjectAssignment } from 'src/modules/subject-assignment/entities/subject-assignment.entity';
 import {
   Column,
   Entity,
@@ -20,5 +20,5 @@ export class Room {
   building: Building;
 
   @OneToMany(() => SubjectAssignment, (subAssignment) => subAssignment.room)
-  assignments: SubjectAssignment;
+  assignments: SubjectAssignment[];
 }

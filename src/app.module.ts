@@ -14,10 +14,9 @@ import { BuildingModule } from './modules/buildings/buildings.module';
 import { RoomModule } from './modules/rooms/room.module';
 import { ProfileModule } from './modules/profiles/profile.module';
 import { SubjectModule } from './modules/subjects/subject.module';
-import { SubjectAssignmentModule } from './modules/subjectAssignment/subjectAssignment.module';
-import { AttendancesModule } from './modules/attendances/attendances.module';
 import { connectDB } from './config/db.connect';
-import { RecordsModule } from './modules/records/records.module';
+import { SubjectAssignmentModule } from './modules/subject-assignment/subject-assignment.module';
+import { AttendanceModule } from './modules/attendance/attendance.module';
 
 @Module({
   imports: [
@@ -47,8 +46,7 @@ import { RecordsModule } from './modules/records/records.module';
     ProfileModule,
     SubjectModule,
     SubjectAssignmentModule,
-    AttendancesModule,
-    RecordsModule,
+    AttendanceModule,
   ],
   controllers: [AppController],
   providers: [
