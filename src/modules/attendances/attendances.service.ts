@@ -5,7 +5,6 @@ import { Repository } from 'typeorm';
 import { UsersService } from '../users/users.service';
 import { subjectAssignmentService } from '../subjectAssignment/subjectAssignment.service';
 import { Remarks } from 'src/common/enums/remarkOptions.enum';
-import { LeaveRequestService } from '../leave-request/leave-request.service';
 
 @Injectable()
 export class AttendancesService {
@@ -14,7 +13,6 @@ export class AttendancesService {
     private readonly attendanceRepository: Repository<Attendance>,
     private readonly userService: UsersService,
     private readonly subjectAssignmentService: subjectAssignmentService,
-    private readonly leaveService: LeaveRequestService,
   ) {}
 
   async timeIn(userId: number): Promise<Attendance> {
@@ -263,10 +261,3 @@ export class AttendancesService {
     return attendance;
   }
 }
-
-// TODO ->
-// add time out -> DONE
-// add leave credits for every employee -> DONE
-// add on leave if user is on leave with in that day
-// try add record relation of attendance and subject assignment entity
-// if works then minimize the response of the relation of get all attendance  -> getEmployeesAttendanceByDate, getAllOwnAttendanceByDate
