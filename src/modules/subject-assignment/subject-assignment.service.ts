@@ -8,7 +8,7 @@ import { Repository } from 'typeorm';
 import { UsersService } from '../users/users.service';
 import { RoomService } from '../rooms/room.service';
 import { SubjectService } from '../subjects/subject.service';
-import { convertTo24Hour, formatTime } from 'src/common/helper/timeConverter';
+import { convertTo24Hour } from 'src/common/helper/timeConverter';
 import { AssignSubjectDTO } from './dto/AssignSubject.dto';
 import { SubjectAssignment } from './entities/subject-assignment.entity';
 import { UpdateSubjectScheduleDTO } from './dto/UpdateSubjectSchedule.dto';
@@ -214,6 +214,23 @@ export class subjectAssignmentService {
         },
       };
     });
+  }
+
+  async getUsersLoad(userId: number): Promise<SubjectAssignment[]> {
+    await this.userService.findById(userId);
+
+    const assignment = await this.subjectAssignmentRepo
+      .createQueryBuilder('assign')
+      .leftJoin('assign.subject', 'subject')
+      .select([
+        'assign.id',
+        'assign.startTime',
+        'assign.endTime',
+        'subject.subjectName',
+      ])
+      .where('assign.user =:userId', { userId })
+      .getMany();
+    return assignment;
   }
 
   private convertTo24Hour(time: string): string {
