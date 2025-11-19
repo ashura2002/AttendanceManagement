@@ -9,4 +9,6 @@ export enum Remarks {
   UpComming = 'Up Coming',
   Early = 'Too early',
   Schedule = 'On Schedule',
+  NotAvailable = 'N/A',
+  NotStarted = 'Not Started'
 }

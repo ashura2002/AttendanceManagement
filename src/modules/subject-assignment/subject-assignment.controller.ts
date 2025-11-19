@@ -21,6 +21,7 @@ import { UpdateSubjectScheduleDTO } from './dto/UpdateSubjectSchedule.dto';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { RoleGuard } from 'src/common/guards/role.guard';
+import { SubjectAssignmentResponseShape } from './types/getOwnSubjectAssignment.types';
 
 @Controller('subject-assignment')
 @ApiBearerAuth('access-token')
@@ -60,7 +61,7 @@ export class SubjectAssignmentController {
   async getOwnSubjectAssignmentByDate(
     @Req() req,
     @Query('date') date: Date,
-  ): Promise<any> {
+  ): Promise<SubjectAssignmentResponseShape[]> {
     const { userId } = req.user;
     return await this.subjectAssignmentService.getOwnSubjectAssignmentByDate(
       userId,
