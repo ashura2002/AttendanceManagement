@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -13,21 +12,19 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
+import { subjectAssignmentService } from './subject-assignment.service';
+import { customRoleDecorator } from 'src/common/decorators/Roles.decorator';
+import { Roles } from 'src/common/enums/Roles.enum';
+import { SubjectAssignment } from './entities/subject-assignment.entity';
+import { AssignSubjectDTO } from './dto/AssignSubject.dto';
+import { UpdateSubjectScheduleDTO } from './dto/UpdateSubjectSchedule.dto';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { RoleGuard } from 'src/common/guards/role.guard';
-import { subjectAssignmentService } from './subjectAssignment.service';
-import { customRoleDecorator } from 'src/common/decorators/Roles.decorator';
-import { Roles } from 'src/common/enums/Roles.enum';
-import { AssignSubjectDTO } from './dto/assignSubject.dto';
-import { SubjectAssignment } from './entities/subjectAssignment.entity';
-import { SkipThrottle } from '@nestjs/throttler';
-import { UpdateSubjectScheduleDTO } from './dto/updateSubjectSchedule.dto';
 
 @Controller('subject-assignment')
 @ApiBearerAuth('access-token')
 @UseGuards(JwtAuthGuard, RoleGuard)
-@SkipThrottle()
 export class SubjectAssignmentController {
   constructor(
     private readonly subjectAssignmentService: subjectAssignmentService,
@@ -44,14 +41,6 @@ export class SubjectAssignmentController {
     );
   }
 
-  @Get('all-own')
-  @HttpCode(HttpStatus.OK)
-  @customRoleDecorator(Roles.Employee)
-  async getOwnSubjectAssignments(@Req() req): Promise<SubjectAssignment[]> {
-    const { userId } = req.user;
-    return await this.subjectAssignmentService.getOwnSubjectAssignments(userId);
-  }
-
   @Patch(':id')
   @HttpCode(HttpStatus.OK)
   @customRoleDecorator(Roles.Admin, Roles.Hr, Roles.ProgramHead)
@@ -65,30 +54,17 @@ export class SubjectAssignmentController {
     );
   }
 
-  @Delete(':id')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  @HttpCode(HttpStatus.OK)
-  async deleteLoads(@Param('id') id: number): Promise<void> {
-    return await this.subjectAssignmentService.deleteLoads(id);
-  }
-
-  @Get('by-date')
+  @Get('employee')
   @HttpCode(HttpStatus.OK)
   @customRoleDecorator(Roles.Employee)
-  async getLoadsByDate(
+  async getOwnSubjectAssignmentByDate(
     @Req() req,
     @Query('date') date: Date,
-  ): Promise<SubjectAssignment[]> {
+  ): Promise<any> {
     const { userId } = req.user;
-    return await this.subjectAssignmentService.getLoadsByDate(userId, date);
-  }
-
-  @Get('users-load/:id')
-  @HttpCode(HttpStatus.OK)
-  @HttpCode(HttpStatus.OK)
-  async getAllUserLoadsByAdmin(
-    @Param('id', ParseIntPipe) id: number,
-  ): Promise<SubjectAssignment[]> {
-    return await this.subjectAssignmentService.getAllUserLoadsByAdmin(id);
+    return await this.subjectAssignmentService.getOwnSubjectAssignmentByDate(
+      userId,
+      date,
+    );
   }
 }

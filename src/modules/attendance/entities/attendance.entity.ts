@@ -1,8 +1,13 @@
 import { Remarks } from 'src/common/enums/remarkOptions.enum';
-import { UserRecord } from 'src/modules/records/entities/record.entity';
-import { SubjectAssignment } from 'src/modules/subjectAssignment/entities/subjectAssignment.entity';
+import { SubjectAssignment } from 'src/modules/subject-assignment/entities/subject-assignment.entity';
 import { User } from 'src/modules/users/entities/user.entity';
-import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity()
 export class Attendance {
@@ -24,15 +29,12 @@ export class Attendance {
   @Column({ type: 'enum', enum: Remarks, default: Remarks.NoClockInRecord })
   attendanceStatus: Remarks;
 
-  @Column({ type: 'enum', enum: Remarks, default: Remarks.Schedule })
-  remarks: Remarks;
-
-  @ManyToOne(() => SubjectAssignment, (assign) => assign.attendance)
+  @OneToMany(
+    () => SubjectAssignment,
+    (subjectAssign) => subjectAssign.attendance,
+  )
   assignment: SubjectAssignment;
 
   @ManyToOne(() => User, (user) => user.attendance)
   user: User;
-
-  @OneToMany(() => UserRecord, (record) => record.attendance)
-  records: UserRecord[];
 }

@@ -1,7 +1,6 @@
 import { Remarks } from 'src/common/enums/remarkOptions.enum';
 import { SubjectDays } from 'src/common/enums/scheduleSubject.enum';
-import { Attendance } from 'src/modules/attendances/entities/attendance.entity';
-import { UserRecord } from 'src/modules/records/entities/record.entity';
+import { Attendance } from 'src/modules/attendance/entities/attendance.entity';
 import { Room } from 'src/modules/rooms/entities/room.entity';
 import { Subject } from 'src/modules/subjects/entities/subject.entity';
 import { User } from 'src/modules/users/entities/user.entity';
@@ -12,11 +11,16 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-
 @Entity()
 export class SubjectAssignment {
   @PrimaryGeneratedColumn()
   id: number;
+
+  @ManyToOne(() => Subject, (subj) => subj.subjectAssignment)
+  subject: Subject;
+
+  @ManyToOne(() => Room, (room) => room.assignments)
+  room: Room;
 
   @Column({ type: 'time' })
   startTime: string;
@@ -27,18 +31,13 @@ export class SubjectAssignment {
   @Column({ type: 'enum', enum: SubjectDays, array: true })
   days: SubjectDays[];
 
-  @ManyToOne(() => Subject, (sub) => sub.subjectAssignment)
-  subjects: Subject;
-
-  @ManyToOne(() => Room, (room) => room.assignments)
-  room: Room;
+  @Column({ type: 'enum', enum: Remarks, default: Remarks.Schedule })
+  remarks: Remarks;
 
   @ManyToOne(() => User, (user) => user.subjectAssignment)
   user: User;
 
-  @OneToMany(() => Attendance, (attendance) => attendance.assignment)
-  attendance: Attendance
-
-  @OneToMany(() => UserRecord, (record) => record.subjectAssignment)
-  records:UserRecord[]
+ 
+  @ManyToOne(() => Attendance, (attendance) => attendance.assignment)
+  attendance: Attendance;
 }
