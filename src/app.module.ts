@@ -16,7 +16,8 @@ import { ProfileModule } from './modules/profiles/profile.module';
 import { SubjectModule } from './modules/subjects/subject.module';
 import { SubjectAssignmentModule } from './modules/subjectAssignment/subjectAssignment.module';
 import { AttendancesModule } from './modules/attendances/attendances.module';
-
+import { connectDB } from './config/db.connect';
+import { RecordsModule } from './modules/records/records.module';
 
 @Module({
   imports: [
@@ -34,16 +35,7 @@ import { AttendancesModule } from './modules/attendances/attendances.module';
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        type: configService.get<string>('DB_TYPE') as any,
-        host: configService.get<string>('DB_HOST'),
-        port: parseInt(configService.get<string>('DB_PORT') || '5432'),
-        username: configService.get<string>('DB_USERNAME'),
-        password: configService.get<string>('DB_PASSWORD'),
-        database: configService.get<string>('DB_DATABASE'),
-        synchronize: true, // false in production
-        entities: [__dirname + '/./**/*.entity.{ts,js}'],
-      }),
+      useFactory: connectDB,
     }),
     UsersModule,
     AuthModule,
@@ -56,6 +48,7 @@ import { AttendancesModule } from './modules/attendances/attendances.module';
     SubjectModule,
     SubjectAssignmentModule,
     AttendancesModule,
+    RecordsModule,
   ],
   controllers: [AppController],
   providers: [
@@ -66,4 +59,4 @@ import { AttendancesModule } from './modules/attendances/attendances.module';
     },
   ],
 })
-export class AppModule { }
+export class AppModule {}

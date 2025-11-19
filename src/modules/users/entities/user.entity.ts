@@ -18,6 +18,7 @@ import { Request } from 'src/modules/leave-request/entities/request.entity';
 import { Profile } from 'src/modules/profiles/entities/profile.entity';
 import { SubjectAssignment } from 'src/modules/subjectAssignment/entities/subjectAssignment.entity';
 import { Attendance } from 'src/modules/attendances/entities/attendance.entity';
+import { UserRecord } from 'src/modules/records/entities/record.entity';
 
 @Entity()
 export class User {
@@ -77,4 +78,7 @@ export class User {
 
   @Column({ type: 'int', default: 160 })
   leaveCredits: number;
+
+  @OneToMany(() => UserRecord, (record) => record.user)
+  records:UserRecord[]
 }
