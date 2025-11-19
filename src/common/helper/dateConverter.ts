@@ -1,7 +1,7 @@
 import { SubjectDays } from '../enums/scheduleSubject.enum';
 
 export function getDayOnDate(date: Date): SubjectDays | null {
-  const day = date.getDay();
+  const day = new Date(date).getDay();
 
   const weekdays: Record<number, SubjectDays> = {
     0: SubjectDays.Sun,
