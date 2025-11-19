@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -67,5 +68,21 @@ export class SubjectAssignmentController {
       userId,
       date,
     );
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @customRoleDecorator(Roles.Admin, Roles.Hr, Roles.ProgramHead)
+  async deleteSubjectAssignment(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<void> {
+    return await this.subjectAssignmentService.deleteLoads(id);
+  }
+
+  @Get('employees-load/:id')
+  @HttpCode(HttpStatus.OK)
+  @customRoleDecorator(Roles.Admin, Roles.Hr, Roles.ProgramHead)
+  async getUsersLoad(@Param('id', ParseIntPipe) id: number): Promise<any> {
+    return await this.subjectAssignmentService.getUsersLoad(id);
   }
 }
