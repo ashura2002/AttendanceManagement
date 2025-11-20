@@ -1,14 +1,13 @@
 export enum Remarks {
-  Present = 'Present',
-  Absent = 'Absent',
-  Late = 'Late',
-  LeftEarly = 'Early Out',
-  OnLeave = 'On Leave',
-  Overtime = 'Overtime',
-  NoClockInRecord = 'No Time In Record',
-  UpComming = 'Up Coming',
-  Early = 'Too early',
-  Schedule = 'On Schedule',
-  NotAvailable = 'N/A',
-  NotStarted = 'Not Started'
+  NoClockInRecords = 'No Clock In Records',
+  OnTime = 'On Time',
+  LateArrival = 'Late Arrival',
+  ClassEnded = 'Class Already Ended',
+  NotScheduledDay = 'Not a Scheduled Day',
+  TooEarly = 'Too Early for Class',
+  EarlyOut = 'Early Out',
+  SlightlyEarly = 'Slightly Early',
+  OnTimeOut = 'On Time Out',
+  SlightOvertime = 'Slight Overtime',
+  Overtime = 'Overtime'
 }
