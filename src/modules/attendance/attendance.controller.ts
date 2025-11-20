@@ -21,6 +21,14 @@ export class AttendanceController {
   @HttpCode(HttpStatus.OK)
   async timeIn(@Req() req): Promise<any> {
     const { userId } = req.user;
-    return await this.attendanceService.timeIn(userId);
+    return await this.attendanceService.timeIn(userId)
+  }
+
+  
+  @Post('time-out')
+  @HttpCode(HttpStatus.OK)
+  async timeOut(@Req() req): Promise<any> {
+    const { userId } = req.user;
+    return await this.attendanceService.timeOut(userId)
   }
 }

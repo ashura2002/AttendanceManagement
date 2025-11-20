@@ -8,7 +8,12 @@ import { UsersModule } from '../users/users.module';
 import { SubjectAssignmentModule } from '../subject-assignment/subject-assignment.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Attendance]), JwtModule, UsersModule, SubjectAssignmentModule],
+  imports: [
+    TypeOrmModule.forFeature([Attendance]),
+    JwtModule,
+    UsersModule,
+    SubjectAssignmentModule,
+  ],
   controllers: [AttendanceController],
   providers: [AttendanceService],
   exports: [AttendanceService],
