@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { AttendanceService } from './attendance.service';
 import { AttendanceController } from './attendance.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -12,7 +12,7 @@ import { SubjectAssignmentModule } from '../subject-assignment/subject-assignmen
     TypeOrmModule.forFeature([Attendance]),
     JwtModule,
     UsersModule,
-    SubjectAssignmentModule,
+    forwardRef(() => SubjectAssignmentModule)
   ],
   controllers: [AttendanceController],
   providers: [AttendanceService],
