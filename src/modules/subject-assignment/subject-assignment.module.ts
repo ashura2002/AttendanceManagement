@@ -7,6 +7,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { UsersModule } from '../users/users.module';
 import { SubjectModule } from '../subjects/subject.module';
 import { RoomModule } from '../rooms/room.module';
+import { LeaveRequestModule } from '../leave-request/leave-request.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { RoomModule } from '../rooms/room.module';
     UsersModule,
     SubjectModule,
     RoomModule,
+    LeaveRequestModule
   ],
   controllers: [SubjectAssignmentController],
   providers: [subjectAssignmentService],

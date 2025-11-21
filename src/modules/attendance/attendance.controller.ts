@@ -16,19 +16,4 @@ import { RoleGuard } from 'src/common/guards/role.guard';
 @UseGuards(JwtAuthGuard, RoleGuard)
 export class AttendanceController {
   constructor(private readonly attendanceService: AttendanceService) {}
-
-  @Post('time-in')
-  @HttpCode(HttpStatus.OK)
-  async timeIn(@Req() req): Promise<any> {
-    const { userId } = req.user;
-    return await this.attendanceService.timeIn(userId)
-  }
-
-  
-  @Post('time-out')
-  @HttpCode(HttpStatus.OK)
-  async timeOut(@Req() req): Promise<any> {
-    const { userId } = req.user;
-    return await this.attendanceService.timeOut(userId)
-  }
 }
