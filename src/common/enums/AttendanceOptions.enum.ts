@@ -4,4 +4,5 @@ export enum AttendanceOptions {
   Excuse = 'Excuse',
   Present = 'Present',
   LeftEarly = 'Early Out',
+  Upcoming = 'Upcoming Class'
 }

@@ -9,4 +9,7 @@ export interface SubjectAssignmentResponseShape {
   startTime: string;
   endTime: string;
   remarks: string;
+  TimeIn: string;
+  TimeOut: string;
+  AttendanceStatus: string;
 }
