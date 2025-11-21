@@ -34,6 +34,7 @@ export class subjectAssignmentService {
     const { userId, roomId, subjectId, startTime, endTime, days } =
       subjectAssignmentDTO;
 
+    const dateNow = new Date();
     const user = await this.userService.findById(userId);
     const room = await this.roomService.getRoomById(roomId);
     const subject = await this.subjectService.getSubjectById(subjectId);
@@ -68,6 +69,7 @@ export class subjectAssignmentService {
     const assignment = this.subjectAssignmentRepo.create({
       ...subjectAssignmentDTO,
       subject: subject,
+      date: dateNow,
       user: user,
       room: room,
     });
@@ -138,10 +140,13 @@ export class subjectAssignmentService {
       userId,
       dateNow.toISOString(),
     );
-
     // check if user now have attendance
     const mappedSubjectAssignment = assignment.map((sub) => {
-      const subjectStructure = {
+      const subjectDate = new Date(sub.date);
+      const selectedDate = new Date(dateNow);
+      const isFutureClass = selectedDate > subjectDate;
+
+      return {
         subjectAssignmentID: sub.id,
         subjectName: sub.subject.subjectName,
         controllNumber: sub.subject.controlNumber,
@@ -151,11 +156,15 @@ export class subjectAssignmentService {
         building: sub.room.building.buildingName,
         startTime: formatTime(sub.startTime),
         endTime: formatTime(sub.endTime),
-        remarks: !onLeaveEmployee.length
-          ? Remarks.NoClockInRecords
-          : Remarks.Onleave,
+        remarks: isFutureClass
+          ? Remarks.FutureClass
+          : !onLeaveEmployee.length
+            ? Remarks.NoClockInRecords
+            : Remarks.Onleave,
+        TimeIn: 'N/A',
+        TimeOut: 'N/A',
+        AttendanceStatus: 'Dependes attendance',
       };
-      return subjectStructure;
     });
 
     return mappedSubjectAssignment;

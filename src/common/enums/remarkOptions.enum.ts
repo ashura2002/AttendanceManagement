@@ -4,4 +4,5 @@ export enum Remarks {
   EarlyOut = 'Early Out',
   Overtime = 'Overtime',
   Onleave = 'On Leave',
+  FutureClass = 'Scheduled, Class is upcoming',
 }
