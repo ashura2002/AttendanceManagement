@@ -14,4 +14,5 @@ export class AttendanceService {
     private readonly subjectAssignmentService: subjectAssignmentService,
   ) {}
 
+  async checkAttendanceToday(userId: number, date: Date): Promise<any> {}
 }

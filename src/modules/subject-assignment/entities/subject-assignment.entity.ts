@@ -32,6 +32,9 @@ export class SubjectAssignment {
   @Column({ type: 'enum', enum: SubjectDays, array: true })
   days: SubjectDays[];
 
+  @Column({ type: 'date' })
+  date: Date;
+
   @Column({ type: 'enum', enum: Remarks, default: Remarks.NoClockInRecords })
   remarks: Remarks;
 
