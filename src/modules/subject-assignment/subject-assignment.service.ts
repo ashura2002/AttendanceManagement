@@ -8,12 +8,14 @@ import { Repository } from 'typeorm';
 import { UsersService } from '../users/users.service';
 import { RoomService } from '../rooms/room.service';
 import { SubjectService } from '../subjects/subject.service';
-import { convertTo24Hour } from 'src/common/helper/timeConverter';
+import { convertTo24Hour, formatTime } from 'src/common/helper/timeConverter';
 import { AssignSubjectDTO } from './dto/AssignSubject.dto';
 import { SubjectAssignment } from './entities/subject-assignment.entity';
 import { UpdateSubjectScheduleDTO } from './dto/UpdateSubjectSchedule.dto';
 import { getDayOnDate } from 'src/common/helper/dateConverter';
-
+import { SubjectAssignmentResponseShape } from './types/subjectAssignment.types';
+import { LeaveRequestService } from '../leave-request/leave-request.service';
+import { Remarks } from 'src/common/enums/remarkOptions.enum';
 
 @Injectable()
 export class subjectAssignmentService {
@@ -23,6 +25,7 @@ export class subjectAssignmentService {
     private readonly userService: UsersService,
     private readonly roomService: RoomService,
     private readonly subjectService: SubjectService,
+    private readonly leaveService: LeaveRequestService,
   ) {}
 
   async assignSubject(
@@ -101,9 +104,10 @@ export class subjectAssignmentService {
   async getOwnSubjectAssignmentByDate(
     userId: number,
     date: Date,
-  ): Promise<SubjectAssignment[]> {
+  ): Promise<SubjectAssignmentResponseShape[]> {
     // Get the day of the week for filtering
     const dayName = getDayOnDate(date);
+    const dateNow = new Date(date);
 
     // Validate user exists
     await this.userService.findById(userId);
@@ -119,6 +123,9 @@ export class subjectAssignmentService {
       .select([
         'assignment',
         'subject.subjectName',
+        'subject.unit',
+        'subject.controlNumber',
+        'subject.subjectDescription',
         'room.roomName',
         'building.buildingName',
         'building.location',
@@ -127,7 +134,31 @@ export class subjectAssignmentService {
       .andWhere(':dayName = ANY(assignment.days)', { dayName })
       .getMany();
 
-    return assignment;
+    const onLeaveEmployee = await this.leaveService.findOnLeaveEmployee(
+      userId,
+      dateNow.toISOString(),
+    );
+
+    // check if user now have attendance
+    const mappedSubjectAssignment = assignment.map((sub) => {
+      const subjectStructure = {
+        subjectAssignmentID: sub.id,
+        subjectName: sub.subject.subjectName,
+        controllNumber: sub.subject.controlNumber,
+        subjectDescription: sub.subject.subjectDescription,
+        unit: sub.subject.unit,
+        roomName: sub.room.roomName,
+        building: sub.room.building.buildingName,
+        startTime: formatTime(sub.startTime),
+        endTime: formatTime(sub.endTime),
+        remarks: !onLeaveEmployee.length
+          ? Remarks.NoClockInRecords
+          : Remarks.Onleave,
+      };
+      return subjectStructure;
+    });
+
+    return mappedSubjectAssignment;
   }
 
   async getUsersLoad(userId: number): Promise<SubjectAssignment[]> {

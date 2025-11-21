@@ -22,6 +22,8 @@ import { UpdateSubjectScheduleDTO } from './dto/UpdateSubjectSchedule.dto';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { RoleGuard } from 'src/common/guards/role.guard';
+import { SubjectAssignmentResponseShape } from './types/subjectAssignment.types';
+import { SkipThrottle } from '@nestjs/throttler';
 
 @Controller('subject-assignment')
 @ApiBearerAuth('access-token')
@@ -58,10 +60,11 @@ export class SubjectAssignmentController {
   @Get('employee')
   @HttpCode(HttpStatus.OK)
   @customRoleDecorator(Roles.Employee)
+  @SkipThrottle()
   async getOwnSubjectAssignmentByDate(
     @Req() req,
     @Query('date') date: string,
-  ): Promise<SubjectAssignment[]> {
+  ): Promise<SubjectAssignmentResponseShape[]> {
     const { userId } = req.user;
     const dateString = new Date(date);
     return await this.subjectAssignmentService.getOwnSubjectAssignmentByDate(
