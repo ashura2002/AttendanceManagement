@@ -1,5 +1,7 @@
 import {
   BadRequestException,
+  forwardRef,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -16,6 +18,8 @@ import { getDayOnDate } from 'src/common/helper/dateConverter';
 import { SubjectAssignmentResponseShape } from './types/subjectAssignment.types';
 import { LeaveRequestService } from '../leave-request/leave-request.service';
 import { Remarks } from 'src/common/enums/remarkOptions.enum';
+import { AttendanceService } from '../attendance/attendance.service';
+import { AttendanceOptions } from 'src/common/enums/AttendanceOptions.enum';
 
 @Injectable()
 export class subjectAssignmentService {
@@ -26,6 +30,8 @@ export class subjectAssignmentService {
     private readonly roomService: RoomService,
     private readonly subjectService: SubjectService,
     private readonly leaveService: LeaveRequestService,
+    @Inject(forwardRef(() => AttendanceService))
+    private readonly attendanceService: AttendanceService,
   ) {}
 
   async assignSubject(
@@ -110,12 +116,9 @@ export class subjectAssignmentService {
     // Get the day of the week for filtering
     const dayName = getDayOnDate(date);
     const dateNow = new Date(date);
-
     // Validate user exists
     await this.userService.findById(userId);
-
     if (!dayName) return [];
-
     const assignment = await this.subjectAssignmentRepo
       .createQueryBuilder('assignment')
       .leftJoin('assignment.subject', 'subject')
@@ -135,17 +138,21 @@ export class subjectAssignmentService {
       .where('assignment.user =:userId', { userId })
       .andWhere(':dayName = ANY(assignment.days)', { dayName })
       .getMany();
-
     const onLeaveEmployee = await this.leaveService.findOnLeaveEmployee(
       userId,
       dateNow.toISOString(),
     );
-    // check if user now have attendance
+    const userAttendance = await this.attendanceService.checkAttendanceToday(
+      userId,
+      dateNow,
+    );
     const mappedSubjectAssignment = assignment.map((sub) => {
       const subjectDate = new Date(sub.date);
       const selectedDate = new Date(dateNow);
+      const attendanceForThisSubjects = userAttendance.find(
+        (a) => a.subjectAssignment.id === sub.id,
+      );
       const isFutureClass = selectedDate > subjectDate;
-
       return {
         subjectAssignmentID: sub.id,
         subjectName: sub.subject.subjectName,
@@ -156,14 +163,21 @@ export class subjectAssignmentService {
         building: sub.room.building.buildingName,
         startTime: formatTime(sub.startTime),
         endTime: formatTime(sub.endTime),
-        remarks: isFutureClass
-          ? Remarks.FutureClass
-          : !onLeaveEmployee.length
-            ? Remarks.NoClockInRecords
-            : Remarks.Onleave,
-        TimeIn: 'N/A',
-        TimeOut: 'N/A',
-        AttendanceStatus: 'Dependes attendance',
+        remarks: attendanceForThisSubjects
+          ? attendanceForThisSubjects.attendanceStatus
+          : isFutureClass
+            ? Remarks.FutureClass
+            : !onLeaveEmployee.length
+              ? Remarks.NoClockInRecords
+              : Remarks.Onleave,
+        TimeIn: formatTime(attendanceForThisSubjects?.timeIn) || 'N/A',
+        TimeOut: formatTime(attendanceForThisSubjects?.timeOut) || 'N/A',
+        AttendanceStatus: attendanceForThisSubjects
+          ? attendanceForThisSubjects.attendanceStatus ===
+            AttendanceOptions.Present
+            ? AttendanceOptions.NoTimeOut
+            : attendanceForThisSubjects.attendanceStatus
+          : AttendanceOptions.Absent,
       };
     });
 

@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { SubjectAssignmentController } from './subject-assignment.controller';
 import { subjectAssignmentService } from './subject-assignment.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -8,6 +8,7 @@ import { UsersModule } from '../users/users.module';
 import { SubjectModule } from '../subjects/subject.module';
 import { RoomModule } from '../rooms/room.module';
 import { LeaveRequestModule } from '../leave-request/leave-request.module';
+import { AttendanceModule } from '../attendance/attendance.module';
 
 @Module({
   imports: [
@@ -16,7 +17,8 @@ import { LeaveRequestModule } from '../leave-request/leave-request.module';
     UsersModule,
     SubjectModule,
     RoomModule,
-    LeaveRequestModule
+    LeaveRequestModule,
+    forwardRef(() => AttendanceModule),
   ],
   controllers: [SubjectAssignmentController],
   providers: [subjectAssignmentService],
