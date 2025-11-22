@@ -8,8 +8,8 @@ export interface SubjectAssignmentResponseShape {
   building: string;
   startTime: string;
   endTime: string;
-  remarks: string;
-  TimeIn: string;
+  remarks: string | undefined;
+  TimeIn: string | undefined;
   TimeOut: string;
   AttendanceStatus: string;
 }

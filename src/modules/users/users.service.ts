@@ -13,6 +13,7 @@ import { Roles } from 'src/common/enums/Roles.enum';
 import { DepartmentsService } from '../departments/departments.service';
 import { AssignDeptDTO } from './dto/assignDep.dto';
 import { NotificationService } from '../notification/notification.service';
+import { UserResponseDTO } from './dto/user-response.dto';
 
 @Injectable()
 export class UsersService {
@@ -44,7 +45,6 @@ export class UsersService {
       relations: ['department'],
       select: {
         department: {
-          id: true,
           departmentName: true,
           description: true,
         },
@@ -158,10 +158,26 @@ export class UsersService {
     return await this.userRepo.save(user);
   }
 
-  async getAllUsersWithEmployeeRoles(): Promise<User[]> {
-    const user = await this.userRepo.find({
-      where: { role: Roles.Employee },
-    });
-    return user;
+  async getAllUsersWithEmployeeRoles(): Promise<UserResponseDTO[]> {
+    const user = await this.userRepo
+      .createQueryBuilder('user')
+      .leftJoin('user.department', 'department')
+      .select(['user', 'department'])
+      .where('user.role =:role', { role: Roles.Employee })
+      .getMany();
+
+    return user.map((u) => this.mapToUserResponse(u));
+  }
+
+  private mapToUserResponse(user: User): UserResponseDTO {
+    return {
+      id: user.id,
+      userName: user.userName,
+      displayName: user.displayName,
+      email: user.email,
+      role: user.role,
+      department: user.department?.departmentName || null,
+      leaveCredits: user.leaveCredits,
+    };
   }
 }
