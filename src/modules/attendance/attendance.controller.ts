@@ -48,4 +48,13 @@ export class AttendanceController {
     const { userId } = req.user;
     return await this.attendanceService.getOwnAttendanceLog(userId, yearMonth);
   }
+
+  @Get('admin/attendance-log')
+  @customRoleDecorator(Roles.Admin, Roles.Hr, Roles.ProgramHead)
+  @HttpCode(HttpStatus.OK)
+  async getEmployeesAttendanceLog(
+    @Query('year-month') yearMonth: Date,
+  ): Promise<AttendanceLogResponse[]> {
+    return await this.attendanceService.getEmployeesAttendanceLog(yearMonth);
+  }
 }

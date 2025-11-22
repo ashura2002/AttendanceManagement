@@ -157,4 +157,11 @@ export class UsersService {
   async saveUser(user: User): Promise<User> {
     return await this.userRepo.save(user);
   }
+
+  async getAllUsersWithEmployeeRoles(): Promise<User[]> {
+    const user = await this.userRepo.find({
+      where: { role: Roles.Employee },
+    });
+    return user;
+  }
 }
