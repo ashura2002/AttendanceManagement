@@ -265,8 +265,4 @@ export class AttendanceService {
   }
 }
 // To do ->
-// get all attendance for attendance log EMPLOYEE DONE -> ADMIN NALANG
-// get all employee users -> DONE
-// response sa get all users dapat makita ang department sa get all employees
-// fix return response sa mga na nested objects
-// qr scan for admins
+// qr scan for admin
