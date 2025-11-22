@@ -10,6 +10,8 @@ import { Attendance } from './entities/attendance.entity';
 import { UsersService } from '../users/users.service';
 import { subjectAssignmentService } from '../subject-assignment/subject-assignment.service';
 import { AttendanceOptions } from 'src/common/enums/AttendanceOptions.enum';
+import { formatTime } from 'src/common/helper/timeConverter';
+import { AttendanceLogResponse } from './types/attendanceLogResponse.types';
 
 @Injectable()
 export class AttendanceService {
@@ -191,8 +193,40 @@ export class AttendanceService {
 
     return attendance;
   }
+
+  async getOwnAttendanceLog(
+    userId: number,
+    yearMonth: Date,
+  ): Promise<AttendanceLogResponse[]> {
+    const selectedDate = new Date(yearMonth);
+    const year = selectedDate.getFullYear();
+    const months = selectedDate.getMonth() + 1;
+    console.log({ types: typeof selectedDate, year: year, month: months });
+
+    const attendance = await this.attendanceRepository
+      .createQueryBuilder('attendance')
+      .where('attendance.user =:userId', { userId })
+      .andWhere('EXTRACT(YEAR FROM attendance.date) = :year', { year })
+      .andWhere('EXTRACT(MONTH FROM attendance.date) = :months', { months })
+      .getMany();
+
+    const mappedAttendance = attendance.map((a) => {
+      const attendanceResponseStructure = {
+        id: a.id,
+        date: a.date,
+        timeIn: formatTime(a.timeIn),
+        timeOut: formatTime(a.timeOut),
+        totalHours: a.totalHours,
+        attendanceStatus: a.attendanceStatus,
+      };
+      return attendanceResponseStructure;
+    });
+
+    return mappedAttendance;
+  }
 }
 // To do ->
-// get all attendance for attendance log
-// qr scan for admins
+// get all attendance for attendance log EMPLOYEE DONE -> ADMIN NALANG
+// get all employee users
 // fix return response sa mga na nested objects
+// qr scan for admins
