@@ -66,7 +66,7 @@ export class User {
     this.password = await bcrypt.hash(this.password, 10);
   }
 
-  @OneToOne(() => User, (user) => user.profile)
+  @OneToOne(() => Profile, (profile) => profile.user)
   profile: Profile;
 
   @OneToMany(() => SubjectAssignment, (subAssignment) => subAssignment.user)

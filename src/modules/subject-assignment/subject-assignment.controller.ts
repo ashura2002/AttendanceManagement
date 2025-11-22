@@ -22,8 +22,8 @@ import { UpdateSubjectScheduleDTO } from './dto/UpdateSubjectSchedule.dto';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { RoleGuard } from 'src/common/guards/role.guard';
-import { SubjectAssignmentResponseShape } from './types/subjectAssignment.types';
 import { SkipThrottle } from '@nestjs/throttler';
+import { SubjectAssignmentResponseShape } from './dto/SubjectAssignmentResponse.dto';
 
 @Controller('subject-assignment')
 @ApiBearerAuth('access-token')
@@ -82,10 +82,16 @@ export class SubjectAssignmentController {
     return await this.subjectAssignmentService.deleteLoads(id);
   }
 
-  @Get('employees-load/:id')
+  @Get('employees-load/:employeeId')
   @HttpCode(HttpStatus.OK)
   @customRoleDecorator(Roles.Admin, Roles.Hr, Roles.ProgramHead)
-  async getUsersLoad(@Param('id', ParseIntPipe) id: number): Promise<any> {
-    return await this.subjectAssignmentService.getUsersLoad(id);
+  async getUsersLoad(
+    @Param('employeeId', ParseIntPipe) employeeId: number,
+    @Query('date') date: Date,
+  ): Promise<SubjectAssignmentResponseShape[]> {
+    return await this.subjectAssignmentService.getEmployeesLoadByDate(
+      employeeId,
+      date,
+    );
   }
 }

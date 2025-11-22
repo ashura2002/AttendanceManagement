@@ -21,6 +21,7 @@ import { Roles } from 'src/common/enums/Roles.enum';
 import { customRoleDecorator } from 'src/common/decorators/Roles.decorator';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { AssignDeptDTO } from './dto/assignDep.dto';
+import { UserResponseDTO } from './dto/user-response.dto';
 
 @ApiBearerAuth('access-token')
 @Controller('users')
@@ -45,7 +46,7 @@ export class UsersController {
   @Get('all-employees')
   @HttpCode(HttpStatus.OK)
   @customRoleDecorator(Roles.Admin, Roles.Hr, Roles.ProgramHead)
-  async getAllUsersWithEmployeeRole(): Promise<User[]> {
+  async getAllUsersWithEmployeeRole(): Promise<UserResponseDTO[]> {
     return await this.userService.getAllUsersWithEmployeeRoles();
   }
 
