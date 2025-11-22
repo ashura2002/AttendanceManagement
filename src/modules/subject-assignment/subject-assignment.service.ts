@@ -15,11 +15,12 @@ import { AssignSubjectDTO } from './dto/AssignSubject.dto';
 import { SubjectAssignment } from './entities/subject-assignment.entity';
 import { UpdateSubjectScheduleDTO } from './dto/UpdateSubjectSchedule.dto';
 import { getDayOnDate } from 'src/common/helper/dateConverter';
-import { SubjectAssignmentResponseShape } from './types/subjectAssignment.types';
 import { LeaveRequestService } from '../leave-request/leave-request.service';
 import { Remarks } from 'src/common/enums/remarkOptions.enum';
 import { AttendanceService } from '../attendance/attendance.service';
 import { AttendanceOptions } from 'src/common/enums/AttendanceOptions.enum';
+import { Attendance } from '../attendance/entities/attendance.entity';
+import { SubjectAssignmentResponseShape } from './dto/SubjectAssignmentResponse.dto';
 
 @Injectable()
 export class subjectAssignmentService {
@@ -113,12 +114,65 @@ export class subjectAssignmentService {
     userId: number,
     date: Date,
   ): Promise<SubjectAssignmentResponseShape[]> {
-    // Get the day of the week for filtering
     const dayName = getDayOnDate(date);
     const dateNow = new Date(date);
-    // Validate user exists
+
     await this.userService.findById(userId);
     if (!dayName) return [];
+
+    const assignment = await this.subjectAssignmentRepo
+      .createQueryBuilder('assignment')
+      .leftJoin('assignment.subject', 'subject')
+      .leftJoin('assignment.room', 'room')
+      .leftJoin('assignment.user', 'user')
+      .leftJoin('room.building', 'building')
+      .select([
+        'assignment',
+        'subject.subjectName',
+        'subject.unit',
+        'subject.controlNumber',
+        'subject.subjectDescription',
+        'room.roomName',
+        'building.buildingName',
+        'building.location',
+      ])
+      .where('assignment.user = :userId', { userId })
+      .andWhere(':dayName = ANY(assignment.days)', { dayName })
+      .getMany();
+
+    const onLeaveEmployee = await this.leaveService.findOnLeaveEmployee(
+      userId,
+      dateNow.toISOString(),
+    );
+
+    const userAttendance = await this.attendanceService.checkAttendanceToday(
+      userId,
+      dateNow,
+    );
+
+    return assignment.map((sub) => {
+      const attendanceForThisSubjects = userAttendance.find(
+        (a: Attendance) => a.subjectAssignment.id === sub.id,
+      );
+
+      return this.mapToSubjectAssignmentResponse(
+        sub,
+        attendanceForThisSubjects,
+        onLeaveEmployee,
+        dateNow,
+      );
+    });
+  }
+
+  // FOR ADMIN
+  async getEmployeesLoadByDate(
+    userId: number,
+    date: Date,
+  ): Promise<SubjectAssignmentResponseShape[]> {
+    const dayName = getDayOnDate(date);
+    const dateNow = new Date(date);
+    await this.userService.findById(userId);
+
     const assignment = await this.subjectAssignmentRepo
       .createQueryBuilder('assignment')
       .leftJoin('assignment.subject', 'subject')
@@ -138,6 +192,7 @@ export class subjectAssignmentService {
       .where('assignment.user =:userId', { userId })
       .andWhere(':dayName = ANY(assignment.days)', { dayName })
       .getMany();
+
     const onLeaveEmployee = await this.leaveService.findOnLeaveEmployee(
       userId,
       dateNow.toISOString(),
@@ -146,59 +201,19 @@ export class subjectAssignmentService {
       userId,
       dateNow,
     );
-    const mappedSubjectAssignment = assignment.map((sub) => {
-      const subjectDate = new Date(sub.date);
-      const selectedDate = new Date(dateNow);
+
+    return assignment.map((sub) => {
       const attendanceForThisSubjects = userAttendance.find(
-        (a) => a.subjectAssignment.id === sub.id,
+        (a: Attendance) => a.subjectAssignment.id === sub.id,
       );
-      const isFutureClass = selectedDate > subjectDate;
-      return {
-        subjectAssignmentID: sub.id,
-        subjectName: sub.subject.subjectName,
-        controllNumber: sub.subject.controlNumber,
-        subjectDescription: sub.subject.subjectDescription,
-        unit: sub.subject.unit,
-        roomName: sub.room.roomName,
-        building: sub.room.building.buildingName,
-        startTime: formatTime(sub.startTime),
-        endTime: formatTime(sub.endTime),
-        remarks: attendanceForThisSubjects
-          ? attendanceForThisSubjects.attendanceStatus
-          : isFutureClass
-            ? Remarks.FutureClass
-            : !onLeaveEmployee.length
-              ? Remarks.NoClockInRecords
-              : Remarks.Onleave,
-        TimeIn: formatTime(attendanceForThisSubjects?.timeIn) || 'N/A',
-        TimeOut: formatTime(attendanceForThisSubjects?.timeOut) || 'N/A',
-        AttendanceStatus: attendanceForThisSubjects
-          ? attendanceForThisSubjects.attendanceStatus ===
-            AttendanceOptions.Present
-            ? AttendanceOptions.NoTimeOut
-            : attendanceForThisSubjects.attendanceStatus
-          : AttendanceOptions.Absent,
-      };
+
+      return this.mapToSubjectAssignmentResponse(
+        sub,
+        attendanceForThisSubjects,
+        onLeaveEmployee,
+        dateNow,
+      );
     });
-
-    return mappedSubjectAssignment;
-  }
-
-  async getUsersLoad(userId: number): Promise<SubjectAssignment[]> {
-    await this.userService.findById(userId);
-
-    const assignment = await this.subjectAssignmentRepo
-      .createQueryBuilder('assign')
-      .leftJoin('assign.subject', 'subject')
-      .select([
-        'assign.id',
-        'assign.startTime',
-        'assign.endTime',
-        'subject.subjectName',
-      ])
-      .where('assign.user =:userId', { userId })
-      .getMany();
-    return assignment;
   }
 
   private convertTo24Hour(time: string): string {
@@ -220,5 +235,45 @@ export class subjectAssignmentService {
     if (modifier === 'AM' && hourNum === 12) hourNum = 0;
 
     return `${hourNum.toString().padStart(2, '0')}:${minutes}:00`;
+  }
+
+  private mapToSubjectAssignmentResponse(
+    sub: SubjectAssignment,
+    attendanceForThisSubjects: Attendance | undefined,
+    onLeaveEmployee: any[],
+    selectedDate: Date,
+  ): SubjectAssignmentResponseShape {
+    const subjectDate = new Date(sub.date);
+    const isFutureClass = selectedDate > subjectDate;
+
+    return {
+      subjectAssignmentID: sub.id,
+      subjectName: sub.subject.subjectName,
+      controllNumber: sub.subject.controlNumber,
+      subjectDescription: sub.subject.subjectDescription,
+      unit: sub.subject.unit,
+      roomName: sub.room.roomName,
+      building: sub.room.building.buildingName,
+      startTime: formatTime(sub.startTime),
+      endTime: formatTime(sub.endTime),
+
+      remarks: attendanceForThisSubjects
+        ? attendanceForThisSubjects.attendanceStatus
+        : isFutureClass
+          ? Remarks.FutureClass
+          : !onLeaveEmployee.length
+            ? Remarks.NoClockInRecords
+            : Remarks.Onleave,
+
+      TimeIn: formatTime(attendanceForThisSubjects?.timeIn as string),
+      TimeOut: formatTime(attendanceForThisSubjects?.timeOut as string),
+
+      AttendanceStatus: attendanceForThisSubjects
+        ? attendanceForThisSubjects.attendanceStatus ===
+          AttendanceOptions.Present
+          ? AttendanceOptions.NoTimeOut
+          : attendanceForThisSubjects.attendanceStatus
+        : AttendanceOptions.Absent,
+    };
   }
 }
