@@ -42,6 +42,13 @@ export class UsersController {
     return await this.userService.currentUser(userId);
   }
 
+  @Get('all-employees')
+  @HttpCode(HttpStatus.OK)
+  @customRoleDecorator(Roles.Admin, Roles.Hr, Roles.ProgramHead)
+  async getAllUsersWithEmployeeRole(): Promise<User[]> {
+    return await this.userService.getAllUsersWithEmployeeRoles();
+  }
+
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @customRoleDecorator(Roles.Admin, Roles.Hr, Roles.ProgramHead)
@@ -51,7 +58,7 @@ export class UsersController {
 
   @Put(':id')
   @HttpCode(HttpStatus.OK)
-  @customRoleDecorator(Roles.Admin)
+  @customRoleDecorator(Roles.Admin, Roles.Hr, Roles.ProgramHead)
   async updateUser(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateUserDTO: UpdateUserDTO,
@@ -61,14 +68,14 @@ export class UsersController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @customRoleDecorator(Roles.Admin)
+  @customRoleDecorator(Roles.Admin, Roles.Hr, Roles.ProgramHead)
   async deleteUser(@Param('id', ParseIntPipe) id: number): Promise<void> {
     return await this.userService.delete(id);
   }
 
   @Patch(':id/departments')
   @HttpCode(HttpStatus.OK)
-  @customRoleDecorator(Roles.Admin)
+  @customRoleDecorator(Roles.Admin, Roles.Hr, Roles.ProgramHead)
   async assignTo(
     @Req() req,
     @Param('id', ParseIntPipe) id: number,

@@ -201,11 +201,15 @@ export class AttendanceService {
     const selectedDate = new Date(yearMonth);
     const year = selectedDate.getFullYear();
     const months = selectedDate.getMonth() + 1;
-    console.log({ types: typeof selectedDate, year: year, month: months });
+
+    // console.log({ types: typeof selectedDate, year: year, month: months });
 
     const attendance = await this.attendanceRepository
       .createQueryBuilder('attendance')
       .where('attendance.user =:userId', { userId })
+      .leftJoin('attendance.subjectAssignment', 'subjectAssignment')
+      .leftJoin('subjectAssignment.subject', 'subject')
+      .select(['attendance', 'subjectAssignment', 'subject'])
       .andWhere('EXTRACT(YEAR FROM attendance.date) = :year', { year })
       .andWhere('EXTRACT(MONTH FROM attendance.date) = :months', { months })
       .getMany();
@@ -218,6 +222,41 @@ export class AttendanceService {
         timeOut: formatTime(a.timeOut),
         totalHours: a.totalHours,
         attendanceStatus: a.attendanceStatus,
+        subjectName: a.subjectAssignment.subject.subjectName,
+      };
+      return attendanceResponseStructure;
+    });
+
+    return mappedAttendance;
+  }
+
+  async getEmployeesAttendanceLog(
+    yearMonth: Date,
+  ): Promise<AttendanceLogResponse[]> {
+    const selectedDate = new Date(yearMonth);
+    const year = selectedDate.getFullYear();
+    const months = selectedDate.getMonth() + 1;
+
+    const attendance = await this.attendanceRepository
+      .createQueryBuilder('attendance')
+      .leftJoin('attendance.user', 'user')
+      .leftJoin('attendance.subjectAssignment', 'subjectAssignment')
+      .leftJoin('subjectAssignment.subject', 'subject')
+      .select(['attendance', 'user', 'subjectAssignment', 'subject'])
+      .andWhere('EXTRACT(YEAR FROM attendance.date) = :year', { year })
+      .andWhere('EXTRACT(MONTH FROM attendance.date) = :months', { months })
+      .getMany();
+
+    const mappedAttendance = attendance.map((a) => {
+      const attendanceResponseStructure = {
+        id: a.id,
+        date: a.date,
+        timeIn: a.timeIn,
+        timeOut: a.timeOut,
+        totalHours: a.totalHours,
+        attendanceStatus: a.attendanceStatus,
+        subjectName: a.subjectAssignment.subject.subjectName,
+        user: a.user.displayName,
       };
       return attendanceResponseStructure;
     });
@@ -227,6 +266,7 @@ export class AttendanceService {
 }
 // To do ->
 // get all attendance for attendance log EMPLOYEE DONE -> ADMIN NALANG
-// get all employee users
+// get all employee users -> DONE
+// response sa get all users dapat makita ang department sa get all employees
 // fix return response sa mga na nested objects
 // qr scan for admins
