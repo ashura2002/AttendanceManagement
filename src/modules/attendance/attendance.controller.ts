@@ -1,8 +1,10 @@
 import {
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -12,6 +14,7 @@ import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { RoleGuard } from 'src/common/guards/role.guard';
 import { customRoleDecorator } from 'src/common/decorators/Roles.decorator';
 import { Roles } from 'src/common/enums/Roles.enum';
+import { AttendanceLogResponse } from './types/attendanceLogResponse.types';
 
 @Controller('attendance')
 @ApiBearerAuth('access-token')
@@ -33,5 +36,16 @@ export class AttendanceController {
   async timeOut(@Req() req): Promise<any> {
     const { userId } = req.user;
     return await this.attendanceService.timeOut(userId);
+  }
+
+  @Get('employee/own')
+  @customRoleDecorator(Roles.Employee)
+  @HttpCode(HttpStatus.OK)
+  async getOwnAttendanceLog(
+    @Req() req,
+    @Query('year-month') yearMonth: Date,
+  ): Promise<AttendanceLogResponse[]> {
+    const { userId } = req.user;
+    return await this.attendanceService.getOwnAttendanceLog(userId, yearMonth);
   }
 }
