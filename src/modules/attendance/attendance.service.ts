@@ -263,6 +263,158 @@ export class AttendanceService {
 
     return mappedAttendance;
   }
+
+  async scanQr(employeeId: number): Promise<any> {
+    // check user
+    const employee = await this.userService.findById(employeeId);
+
+    const now = new Date();
+    const localNow = new Date(
+      now.toLocaleString('en-US', { timeZone: 'Asia/Manila' }),
+    );
+
+    // Get today's sub assignment
+    const assignments =
+      await this.subjectAssignmentService.getOwnSubjectAssignmentByDate(
+        employeeId,
+        localNow,
+      );
+
+    if (!assignments.length) {
+      throw new BadRequestException('No assignments found for today.');
+    }
+
+    // Find ACTIVE assignment (5 min before/after start, ends at endTime)
+    const fiveMinutes = 5 * 60 * 1000; // 5 min buffer
+    const activeAssignment = assignments.find((sub) => {
+      const start = this.toDateWithTime(localNow, sub.startTime);
+      const end = this.toDateWithTime(localNow, sub.endTime);
+
+      return (
+        localNow.getTime() >= start.getTime() - fiveMinutes &&
+        localNow.getTime() <= end.getTime() + fiveMinutes
+      );
+    });
+
+    if (!activeAssignment) {
+      throw new BadRequestException(
+        'No active class schedule for this employee right now.',
+      );
+    }
+
+    // Check if attendance already exists today
+    const existing = await this.attendanceRepository.findOne({
+      where: {
+        user: { id: employeeId },
+        subjectAssignment: { id: activeAssignment.subjectAssignmentID },
+        date: localNow,
+      },
+    });
+
+    if (existing) {
+      throw new BadRequestException(
+        'Attendance for this subject has already been recorded today.',
+      );
+    }
+
+    // Create Time-In and Time-Out based on schedule
+    const classStart = this.toDateWithTime(
+      localNow,
+      activeAssignment.startTime,
+    );
+    const classEnd = this.toDateWithTime(localNow, activeAssignment.endTime);
+
+    const timeInStr = classStart.toTimeString().split(' ')[0];
+    const timeOutStr = classEnd.toTimeString().split(' ')[0];
+
+    const totalHours =
+      (classEnd.getTime() - classStart.getTime()) / (1000 * 60 * 60);
+
+    const attendance = this.attendanceRepository.create({
+      date: localNow,
+      timeIn: timeInStr,
+      attendanceStatus: AttendanceOptions.Present,
+      user: employee,
+      subjectAssignment: { id: activeAssignment.subjectAssignmentID },
+    });
+
+    await this.attendanceRepository.save(attendance);
+
+    const responseShape = {
+      message: 'Attendance Succesfully Recorded',
+      scanTime: localNow,
+      employee: employee.displayName,
+      attendance: attendance,
+    };
+
+    // Return success response
+    return responseShape;
+  }
+
+  async scanQrTimeOut(employeeId: number): Promise<any> {
+    await this.userService.findById(employeeId);
+
+    const now = new Date();
+    const localNow = new Date(
+      now.toLocaleString('en-US', { timeZone: 'Asia/Manila' }),
+    );
+    // find the attendance today
+    const attendance = await this.attendanceRepository.findOne({
+      where: {
+        user: { id: employeeId },
+        date: localNow,
+      },
+      relations: ['subjectAssignment'],
+    });
+
+    if (!attendance || !attendance.timeIn) {
+      throw new BadRequestException('No Time-In record found for today.');
+    }
+
+    if (attendance.timeOut) {
+      throw new BadRequestException('Time-Out has already been recorded.');
+    }
+
+    // get sched time
+    const classEnd = this.toDateWithTime(
+      localNow,
+      attendance.subjectAssignment.endTime,
+    );
+
+    const timeOutStr = localNow.toTimeString().split(' ')[0];
+
+    // Calculate total hours
+    const timeInDate = this.combineDateAndTime(
+      attendance.date,
+      attendance.timeIn,
+    );
+    const totalHours =
+      (localNow.getTime() - timeInDate.getTime()) / (1000 * 60 * 60);
+
+    // determine attendance status
+    let status = attendance.attendanceStatus; // keep existing (Present or Late)
+    if (localNow < classEnd) {
+      status = AttendanceOptions.LeftEarly;
+    } else if (!attendance.timeOut) {
+      status = AttendanceOptions.NoTimeOut;
+    } else {
+      status = AttendanceOptions.Present;
+    }
+
+    // Update attendance record
+    attendance.timeOut = timeOutStr;
+    attendance.totalHours = Number(totalHours.toFixed(2));
+    attendance.attendanceStatus = status;
+
+    await this.attendanceRepository.save(attendance);
+
+    return {
+      message: 'Time-Out successfully recorded',
+      timeOut: timeOutStr,
+      totalHours: attendance.totalHours,
+      attendanceStatus: status,
+    };
+  }
 }
-// To do ->
-// qr scan for admin
+// study scan time in and time out 
+// implement docker
