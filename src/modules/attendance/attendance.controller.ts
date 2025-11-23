@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Get,
   HttpCode,
@@ -56,5 +57,19 @@ export class AttendanceController {
     @Query('year-month') yearMonth: Date,
   ): Promise<AttendanceLogResponse[]> {
     return await this.attendanceService.getEmployeesAttendanceLog(yearMonth);
+  }
+
+  @Post('qr/scan-timein')
+  @customRoleDecorator(Roles.Admin, Roles.Hr, Roles.ProgramHead)
+  @HttpCode(HttpStatus.OK)
+  async scanQr(@Body() body: { employeeId: number }) {
+    return await this.attendanceService.scanQr(body.employeeId);
+  }
+
+  @Post('qr/scan-timeout')
+  @customRoleDecorator(Roles.Admin, Roles.Hr, Roles.ProgramHead)
+  @HttpCode(HttpStatus.OK)
+  async scanQrTimeOut(@Body() body: { employeeId: number }) {
+    return await this.attendanceService.scanQrTimeOut(body.employeeId);
   }
 }
