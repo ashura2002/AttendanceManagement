@@ -8,6 +8,14 @@ import { join } from 'path';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const port = process.env.PORT ?? 8005;
+  app.enableCors({
+    origin: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
+  });
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
