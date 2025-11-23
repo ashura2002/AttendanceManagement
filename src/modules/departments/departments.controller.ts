@@ -81,12 +81,8 @@ export class DepartmentsController {
 
   @Get('own')
   @HttpCode(HttpStatus.OK)
-  async getOwnDepartment(@Req() req): Promise<Department> {
+  async getOwnDepartment(@Req() req): Promise<any> {
     const { userId } = req.user;
-    const department = await this.departmentService.getOwnDepartments(userId);
-    if (!department) {
-      throw new NotFoundException("You don't have a department");
-    }
-    return department;
+    return await this.departmentService.getOwnDepartments(userId);
   }
 }

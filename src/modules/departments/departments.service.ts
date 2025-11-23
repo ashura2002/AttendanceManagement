@@ -12,6 +12,7 @@ import { CreateDepartmentDTO } from './dto/create-department.dto';
 import { UpdateDepartmentDTO } from './dto/update-department.dto';
 import { DepartmentWithEmployees } from './types/DepartmentWithEmployees.types';
 import { UsersService } from '../users/users.service';
+import { ResponseOwnDepartment } from './dto/ResponseOwnDepartment.dto';
 
 @Injectable()
 export class DepartmentsService {
@@ -91,14 +92,7 @@ export class DepartmentsService {
     };
   }
 
-  async getOwnDepartments(userId: number): Promise<Department | null> {
-    const user = await this.userService.findById(userId);
-    if (!user.department?.id) {
-      return null;
-    }
-    const department = await this.departmentRepo.findOne({
-      where: { id: user.department.id },
-    });
-    return department;
+  async getOwnDepartments(userId: number): Promise<ResponseOwnDepartment> {
+    return await this.userService.getOwnDepartment(userId);
   }
 }

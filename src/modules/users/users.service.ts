@@ -14,6 +14,7 @@ import { DepartmentsService } from '../departments/departments.service';
 import { AssignDeptDTO } from './dto/assignDep.dto';
 import { NotificationService } from '../notification/notification.service';
 import { UserResponseDTO } from './dto/user-response.dto';
+import { ResponseOwnDepartment } from '../departments/dto/ResponseOwnDepartment.dto';
 
 @Injectable()
 export class UsersService {
@@ -167,6 +168,15 @@ export class UsersService {
       .getMany();
 
     return user.map((u) => this.mapToUserResponse(u));
+  }
+
+  async getOwnDepartment(userId: number):Promise<ResponseOwnDepartment> {
+    const user = await this.findById(userId);
+    const department = {
+      departmentName: user.department?.departmentName || 'null',
+      departmentDescription: user.department?.description || 'null',
+    };
+    return department;
   }
 
   private mapToUserResponse(user: User): UserResponseDTO {
