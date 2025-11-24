@@ -1,7 +1,7 @@
 import { ConfigService } from '@nestjs/config';
 
 export const connectDB = (configService: ConfigService) => ({
-  type: configService.get<string>('DB_TYPE') as any,
+  type: (configService.get<string>('DB_TYPE') || 'postgres') as 'postgres',
   host: configService.get<string>('DB_HOST'),
   port: parseInt(configService.get<string>('DB_PORT') || '5432'),
   username: configService.get<string>('DB_USERNAME'),
