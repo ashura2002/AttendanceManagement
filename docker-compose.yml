@@ -1,0 +1,67 @@
+services:
+  db:
+    image: postgres:15
+    restart: always
+    container_name: attendance-management-postgres
+    environment:
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_DATABASE}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "${DB_PORT}:5432"
+    networks:
+      - attendance-management-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  app:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: attendance-management
+    environment:
+      PORT: ${PORT}
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_DATABASE: ${DB_DATABASE}
+    ports:
+      - "${PORT}:${PORT}"
+    depends_on:
+      - db
+    volumes:
+      - ./src:/app/src
+    networks:
+      - attendance-management-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${PORT}/healthcheck"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  pgAdmin:
+    image: dpage/pgadmin4
+    restart: always
+    container_name: attendance-management-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "${PGADMIN_HOST_PORT}:${PGADMIN_CONTAINER_PORT}"
+    depends_on:
+      - db
+    networks:
+      - attendance-management-net
+
+networks:
+  attendance-management-net:
+    driver: bridge
+
+volumes:
+  postgres_data:

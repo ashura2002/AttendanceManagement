@@ -317,18 +317,13 @@ export class AttendanceService {
       );
     }
 
-    // Create Time-In and Time-Out based on schedule
+    // Create Time-In based on schedule
     const classStart = this.toDateWithTime(
       localNow,
       activeAssignment.startTime,
     );
-    const classEnd = this.toDateWithTime(localNow, activeAssignment.endTime);
 
     const timeInStr = classStart.toTimeString().split(' ')[0];
-    const timeOutStr = classEnd.toTimeString().split(' ')[0];
-
-    const totalHours =
-      (classEnd.getTime() - classStart.getTime()) / (1000 * 60 * 60);
 
     const attendance = this.attendanceRepository.create({
       date: localNow,
@@ -416,5 +411,3 @@ export class AttendanceService {
     };
   }
 }
-// study scan time in and time out 
-// implement docker
