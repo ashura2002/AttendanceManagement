@@ -31,6 +31,8 @@ services:
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
       DB_DATABASE: ${DB_DATABASE}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRE_IN: ${JWT_EXPIRE_IN}
     ports:
       - "${PORT}:${PORT}"
     depends_on:
